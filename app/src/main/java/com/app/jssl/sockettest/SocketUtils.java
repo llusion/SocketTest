@@ -26,7 +26,7 @@ public class SocketUtils {
     /**
      * 单例获取socket对象
      *
-     * @return
+     * @return socket
      */
     public static Socket getSocket() {
         if (socket == null) {

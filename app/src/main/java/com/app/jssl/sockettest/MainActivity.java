@@ -1,20 +1,15 @@
 package com.app.jssl.sockettest;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 import android.widget.TextView;
 
-import org.json.JSONObject;
-
-import java.io.BufferedWriter;
-import java.io.OutputStreamWriter;
 import java.util.Arrays;
 
 public class MainActivity extends BaseActivity {
-    private TextView send, init, receive, reconnect, jump;
+    private TextView send, init, receive, reconnect;
     private Handler mHandler;
     private Runnable runnable;
 
@@ -26,7 +21,6 @@ public class MainActivity extends BaseActivity {
         reconnect = findViewById(R.id.reconnect);
         send = findViewById(R.id.send);
         receive = findViewById(R.id.receive);
-        jump = findViewById(R.id.jump);
         //socket初始化
         init.setOnClickListener(v -> initSocket());
 
@@ -47,19 +41,19 @@ public class MainActivity extends BaseActivity {
                         runnable = new Runnable() {
                             @Override
                             public void run() {
-                                try {
-                                    JSONObject jsonObject = new JSONObject();
-                                    jsonObject.put("UserId", "7");
-                                    jsonObject.put("MAC", "EC:D0:9F:D2:24:C1");
-                                    String socketData = jsonObject.toString();
-                                    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(SocketUtils.outputStream));
-                                    writer.write(socketData);
-                                    writer.flush();
-                                } catch (Exception e) {
-                                    //当socket心跳无法发送时，进入重连
-
-                                }
-                                mHandler.postDelayed(this, 60 * 1000 * 10);
+//                                try {
+//                                    JSONObject jsonObject = new JSONObject();
+//                                    jsonObject.put("UserId", "7");
+//                                    jsonObject.put("MAC", "EC:D0:9F:D2:24:C1");
+//                                    String socketData = jsonObject.toString();
+//                                    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(SocketUtils.outputStream));
+//                                    writer.write(socketData);
+//                                    writer.flush();
+//                                } catch (Exception e) {
+//                                    //当socket心跳无法发送时，进入重连
+//
+//                                }
+                                mHandler.postDelayed(this, 60 * 1000);
                             }
                         };
                         mHandler.post(runnable);
@@ -79,7 +73,6 @@ public class MainActivity extends BaseActivity {
                     while (((length = SocketUtils.inputStream.read(buffer)) != -1)) {
                         if (length > 0) {
                             String message = new String(Arrays.copyOf(buffer, length), "gb2312").trim();
-
                         }
                     }
                 }
@@ -87,12 +80,6 @@ public class MainActivity extends BaseActivity {
                 e.printStackTrace();
             }
         }));
-
-        jump.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, OtherActivity.class);
-            startActivity(intent);
-            finish();
-        });
     }
 
     private void initSocket() {
