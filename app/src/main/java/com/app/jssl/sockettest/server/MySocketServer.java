@@ -1,9 +1,5 @@
 package com.app.jssl.sockettest.server;
 
-import com.app.jssl.sockettest.MessageEvent;
-
-import org.greenrobot.eventbus.EventBus;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
@@ -53,7 +49,6 @@ public class MySocketServer {
             InetSocketAddress socketAddress = new InetSocketAddress(webConfig.getPort());
             socket = new ServerSocket();
             socket.bind(socketAddress);
-            EventBus.getDefault().postSticky(new MessageEvent("socket server is bind" + socket.toString()));
             while (isEnable) {
                 final Socket remotePeer = socket.accept();
                 threadPool.submit(() -> onAcceptRemotePeer(remotePeer));

@@ -1,10 +1,19 @@
-package com.app.jssl.sockettest;
+package com.app.jssl.sockettest.client;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 import android.widget.TextView;
+
+import com.app.jssl.sockettest.R;
+import com.app.jssl.sockettest.base.BaseActivity;
+import com.app.jssl.sockettest.eventbus.InfoEntity;
+import com.app.jssl.sockettest.eventbus.MessageEvent;
+import com.app.jssl.sockettest.server.ServerActivity;
+import com.app.jssl.sockettest.utils.Constant;
+import com.app.jssl.sockettest.utils.SocketUtils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -17,8 +26,10 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.Arrays;
 
-public class MainActivity extends BaseActivity {
-    private TextView send, init, receive, reconnect, log;
+import static com.app.jssl.sockettest.utils.Constant.info;
+
+public class ClientActivity extends BaseActivity {
+    private TextView send, init, receive, reconnect, log, server;
     private Handler mHandler;
     private Runnable runnable;
 
@@ -29,10 +40,13 @@ public class MainActivity extends BaseActivity {
         init = findViewById(R.id.init);
         reconnect = findViewById(R.id.reconnect);
         send = findViewById(R.id.send);
+        server = findViewById(R.id.server);
         receive = findViewById(R.id.receive);
         log = findViewById(R.id.log);
         EventBus.getDefault().register(this);
 
+        //打开服务器端
+        server.setOnClickListener(v -> startActivity(new Intent(ClientActivity.this, ServerActivity.class)));
         //socket连接
         init.setOnClickListener(v -> initSocket());
 
@@ -55,12 +69,13 @@ public class MainActivity extends BaseActivity {
                             public void run() {
                                 try {
                                     JSONObject jsonObject = new JSONObject();
-                                    jsonObject.put("UserId", "7");
-                                    jsonObject.put("MAC", "EC:D0:9F:D2:24:C1");
+                                    jsonObject.put("UserId", "1");
                                     String socketData = jsonObject.toString();
                                     BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(SocketUtils.outputStream));
                                     writer.write(socketData);
                                     writer.flush();
+                                    info.add(new InfoEntity(Constant.time, "心跳发送成功"));
+                                    EventBus.getDefault().postSticky(new MessageEvent(info));
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 } catch (JSONException e) {
@@ -85,7 +100,9 @@ public class MainActivity extends BaseActivity {
                     int length = 0;
                     while (((length = SocketUtils.inputStream.read(buffer)) != -1)) {
                         if (length > 0) {
-                            String message = new String(Arrays.copyOf(buffer, length), "gb2312").trim();
+                            String message = new String(Arrays.copyOf(buffer, length)).trim();
+                            info.add(new InfoEntity(Constant.time, "收到消息！" + message));
+                            EventBus.getDefault().postSticky(new MessageEvent(info));
                         }
                     }
                 }
@@ -101,9 +118,8 @@ public class MainActivity extends BaseActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
     public void Event(MessageEvent messageEvent) {
-        log.setText(messageEvent.getMessage());
+        log.setText(messageEvent.getInfo().get(0).getTime() + "\n" + messageEvent.getInfo().get(0).getMessage());
     }
-
 
     @Override
     protected void onDestroy() {

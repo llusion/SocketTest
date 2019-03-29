@@ -1,9 +1,11 @@
-package com.app.jssl.sockettest;
+package com.app.jssl.sockettest.base;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
+
+import com.app.jssl.sockettest.utils.NetConnectUtils;
 
 /**
  * 监听网络状态变化

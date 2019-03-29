@@ -1,6 +1,9 @@
-package com.app.jssl.sockettest;
+package com.app.jssl.sockettest.utils;
 
 import android.content.Context;
+
+import com.app.jssl.sockettest.eventbus.InfoEntity;
+import com.app.jssl.sockettest.eventbus.MessageEvent;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -9,6 +12,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+
+import static com.app.jssl.sockettest.utils.Constant.info;
 
 /**
  * Author: ls
@@ -41,7 +46,8 @@ public class SocketUtils {
                         socket.setTcpNoDelay(true);
                         outputStream = socket.getOutputStream();
                         inputStream = socket.getInputStream();
-                        EventBus.getDefault().postSticky(new MessageEvent("socket连接成功！" + socket.toString()));
+                        info.add(new InfoEntity(Constant.time, "socket连接成功！" + socket.toString()));
+                        EventBus.getDefault().postSticky(new MessageEvent(info));
                     } catch (UnknownHostException e) {
                         e.printStackTrace();
                     } catch (IOException e) {

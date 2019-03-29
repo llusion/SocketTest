@@ -1,4 +1,4 @@
-package com.app.jssl.sockettest;
+package com.app.jssl.sockettest.utils;
 
 import android.content.Context;
 import android.net.ConnectivityManager;

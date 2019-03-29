@@ -7,8 +7,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.app.jssl.sockettest.MainActivity;
-import com.app.jssl.sockettest.MessageEvent;
+import com.app.jssl.sockettest.client.ClientActivity;
+import com.app.jssl.sockettest.eventbus.MessageEvent;
 import com.app.jssl.sockettest.R;
 
 import org.greenrobot.eventbus.EventBus;
@@ -23,8 +23,8 @@ import java.io.IOException;
  * Desc:   This is ServerActivity：
  */
 public class ServerActivity extends AppCompatActivity {
-    private Button start, reply, stop, client;
-    private TextView log;
+    private Button start, reply, stop;
+    private TextView log, client;
     private MySocketServer mySocketServer;
 
     @Override
@@ -45,7 +45,7 @@ public class ServerActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         });
-        client.setOnClickListener(v -> startActivity(new Intent(ServerActivity.this, MainActivity.class)));
+        client.setOnClickListener(v -> startActivity(new Intent(ServerActivity.this, ClientActivity.class)));
         reply.setOnClickListener(v -> {
 
         });
@@ -61,6 +61,6 @@ public class ServerActivity extends AppCompatActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
     public void Event(MessageEvent messageEvent) {
-        log.setText(messageEvent.getMessage());
+        log.setText(messageEvent.getInfo().get(0).getTime() + "\n" + messageEvent.getInfo().get(0).getMessage());
     }
 }

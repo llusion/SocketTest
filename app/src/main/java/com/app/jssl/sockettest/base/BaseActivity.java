@@ -1,10 +1,12 @@
-package com.app.jssl.sockettest;
+package com.app.jssl.sockettest.base;
 
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
+
+import com.app.jssl.sockettest.utils.SocketUtils;
 
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 
