@@ -101,7 +101,7 @@ public class ClientActivity extends BaseActivity {
                     while (((length = SocketUtils.inputStream.read(buffer)) != -1)) {
                         if (length > 0) {
                             String message = new String(Arrays.copyOf(buffer, length)).trim();
-                            info.add(new InfoEntity(Constant.time, "收到消息！" + message));
+                            info.add(new InfoEntity(Constant.time, "收到服务器消息！" + message));
                             EventBus.getDefault().postSticky(new MessageEvent(info));
                         }
                     }

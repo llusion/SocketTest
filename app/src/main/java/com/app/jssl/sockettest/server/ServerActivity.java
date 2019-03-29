@@ -7,9 +7,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.app.jssl.sockettest.client.ClientActivity;
-import com.app.jssl.sockettest.eventbus.MessageEvent;
 import com.app.jssl.sockettest.R;
+import com.app.jssl.sockettest.client.ClientActivity;
+import com.app.jssl.sockettest.eventbus.InfoEntity;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -40,7 +40,7 @@ public class ServerActivity extends AppCompatActivity {
         start.setOnClickListener(v -> startServer());
         stop.setOnClickListener(v -> {
             try {
-                mySocketServer.stopServerAsync();
+                mySocketServer.stopServer();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -56,11 +56,17 @@ public class ServerActivity extends AppCompatActivity {
         webConfig.setPort(9001);
         webConfig.setMaxParallels(10);
         mySocketServer = new MySocketServer(webConfig);
-        mySocketServer.startServerAsync();
+        mySocketServer.startServer();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
-    public void Event(MessageEvent messageEvent) {
-        log.setText(messageEvent.getInfo().get(0).getTime() + "\n" + messageEvent.getInfo().get(0).getMessage());
+    public void Event(InfoEntity infoEntity) {
+        log.setText(infoEntity.getTime() + "\n" + infoEntity.getMessage());
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
     }
 }
