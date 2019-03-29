@@ -2,10 +2,13 @@ package com.app.jssl.sockettest;
 
 import android.content.Context;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.UnknownHostException;
 
 /**
  * Author: ls
@@ -33,12 +36,15 @@ public class SocketUtils {
             synchronized (Socket.class) {
                 if (socket == null) {
                     try {
-                        socket = new Socket("192.168.0.15", 19021);
+                        socket = new Socket("127.0.0.1", 9001);
                         socket.setKeepAlive(true);
                         socket.setTcpNoDelay(true);
                         outputStream = socket.getOutputStream();
                         inputStream = socket.getInputStream();
-                    } catch (Exception e) {
+                        EventBus.getDefault().postSticky(new MessageEvent("socket连接成功！" + socket.toString()));
+                    } catch (UnknownHostException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
                         e.printStackTrace();
                     }
                 }
