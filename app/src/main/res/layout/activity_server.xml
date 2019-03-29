@@ -5,44 +5,41 @@
     android:gravity="center_horizontal"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/init"
+    <Button
+        android:id="@+id/start"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="50dp"
         android:gravity="center"
-        android:text="连接socket" />
+        android:text="启动服务" />
 
-    <TextView
-        android:id="@+id/reconnect"
+    <Button
+        android:id="@+id/reply"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:gravity="center"
-        android:text="重连socket" />
+        android:text="响应" />
 
-    <TextView
-        android:id="@+id/send"
+    <Button
+        android:id="@+id/stop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:gravity="center"
-        android:text="发送心跳" />
+        android:text="关闭服务" />
 
-    <TextView
-        android:id="@+id/receive"
+    <Button
+        android:id="@+id/client"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:gravity="center"
-        android:text="启动接收线程" />
+        android:text="打开客户端" />
 
     <TextView
         android:id="@+id/log"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="30px"
-        android:layout_marginRight="30px"
-        android:layout_marginTop="50dp" />
+        android:layout_marginTop="20dp" />
 
 </LinearLayout>
