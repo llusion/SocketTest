@@ -57,4 +57,12 @@
             android:textSize="20sp" />
     </RelativeLayout>
 
+    <android.support.design.widget.CoordinatorLayout
+        android:id="@+id/coordiantor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true">
+
+    </android.support.design.widget.CoordinatorLayout>
+
 </RelativeLayout>

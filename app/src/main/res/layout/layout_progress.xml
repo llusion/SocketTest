@@ -14,10 +14,12 @@
         android:padding="10dip">
 
         <ProgressBar
-            android:id="@+id/progressBar2"
+            android:id="@+id/progressBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="10dip" />
+            android:layout_margin="10dip"
+            android:indeterminateTint="#81d6cf"
+            android:indeterminateTintMode="src_atop" />
     </LinearLayout>
 
 </LinearLayout>

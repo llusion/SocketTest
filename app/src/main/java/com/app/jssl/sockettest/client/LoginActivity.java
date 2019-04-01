@@ -6,8 +6,11 @@ import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +21,12 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.app.jssl.sockettest.R;
+import com.app.jssl.sockettest.eventbus.LoginEntity;
 import com.app.jssl.sockettest.service.SocketService;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 /**
  * Author: ls
@@ -27,14 +35,15 @@ import com.app.jssl.sockettest.service.SocketService;
  */
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
     private TextView mBtnLogin;
-    private View progress;
-    private View mInputLayout;
+    private View progress, mInputLayout;
+    private CoordinatorLayout coordiantor;
     private float mWidth;
     private LinearLayout mName, mPsw;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        EventBus.getDefault().register(this);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_login);
         initView();
@@ -44,6 +53,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         mBtnLogin = findViewById(R.id.main_btn_login);
         progress = findViewById(R.id.layout_progress);
         mInputLayout = findViewById(R.id.input_layout);
+        coordiantor = findViewById(R.id.coordiantor);
         mName = findViewById(R.id.input_layout_name);
         mPsw = findViewById(R.id.input_layout_psw);
         mBtnLogin.setOnClickListener(this);
@@ -51,6 +61,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     @Override
     public void onClick(View v) {
+        mBtnLogin.setClickable(false);
         mWidth = mBtnLogin.getMeasuredWidth();
         mName.setVisibility(View.INVISIBLE);
         mPsw.setVisibility(View.INVISIBLE);
@@ -59,6 +70,14 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         Intent intent = new Intent(LoginActivity.this, SocketService.class);
         startService(intent);
     }
+
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    public void Event(LoginEntity entity) {
+        Snackbar snackbar = Snackbar.make(coordiantor, entity.getMessage(), Snackbar.LENGTH_LONG);
+        snackbar.setActionTextColor(Color.WHITE);
+        snackbar.show();
+    }
+
 
     private void inputAnimator(final View view, float w) {
         AnimatorSet set = new AnimatorSet();
@@ -129,6 +148,14 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         public float getInterpolation(float input) {
             return (float) (Math.pow(2, -10 * input)
                     * Math.sin((input - factor / 4) * (2 * Math.PI) / factor) + 1);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().unregister(this);
         }
     }
 }
