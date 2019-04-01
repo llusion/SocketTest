@@ -30,11 +30,11 @@ public class SocketService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        EventBus.getDefault().post(new LoginEntity(true, "登录成功！"));
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-//        EventBus.getDefault().postSticky(new LoginEntity(true, "登录成功！"));
         return super.onStartCommand(intent, flags, startId);
     }
 }

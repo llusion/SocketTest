@@ -6,15 +6,17 @@
     android:orientation="vertical">
 
     <RelativeLayout
-        android:background="@color/colorAccent"
         android:layout_width="match_parent"
-        android:layout_height="120px">
+        android:layout_height="120px"
+        android:background="@color/colorTiffany">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:text="客户端" />
+            android:text="客户端"
+            android:textColor="@color/colorWhite"
+            android:textSize="18sp" />
 
         <TextView
             android:id="@+id/server"
@@ -22,7 +24,9 @@
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
-            android:text="打开服务器端" />
+            android:text="打开服务器端"
+            android:textColor="@color/colorWhite"
+            android:textSize="13sp" />
 
     </RelativeLayout>
 

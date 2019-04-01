@@ -7,8 +7,10 @@ import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -17,6 +19,7 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -39,6 +42,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private CoordinatorLayout coordiantor;
     private float mWidth;
     private LinearLayout mName, mPsw;
+    private AnimatorSet set;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -66,21 +70,31 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         mName.setVisibility(View.INVISIBLE);
         mPsw.setVisibility(View.INVISIBLE);
         inputAnimator(mInputLayout, mWidth);
-        //启动服务连接socket
-        Intent intent = new Intent(LoginActivity.this, SocketService.class);
-        startService(intent);
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void Event(LoginEntity entity) {
         Snackbar snackbar = Snackbar.make(coordiantor, entity.getMessage(), Snackbar.LENGTH_LONG);
         snackbar.setActionTextColor(Color.WHITE);
         snackbar.show();
+        if (entity.isResult()) {
+            Intent intent = new Intent(LoginActivity.this, ClientActivity.class);
+            startActivity(intent);
+            finish();
+        } else {
+            progress.setVisibility(View.GONE);
+            mInputLayout.setVisibility(View.VISIBLE);
+            //TODO 还原view
+            mName.setVisibility(View.VISIBLE);
+            mPsw.setVisibility(View.VISIBLE);
+            mBtnLogin.setClickable(true);
+        }
     }
 
 
     private void inputAnimator(final View view, float w) {
-        AnimatorSet set = new AnimatorSet();
+        set = new AnimatorSet();
         //输入框添加margin值设置尽量和按钮对齐
         ValueAnimator animator = ValueAnimator.ofFloat(0, w);
         animator.addUpdateListener(animation -> {
@@ -135,6 +149,29 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         animator3.setDuration(1000);
         animator3.setInterpolator(new MyInterpolator());
         animator3.start();
+        animator3.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                //启动服务连接socket
+                Intent intent = new Intent(LoginActivity.this, SocketService.class);
+                startService(intent);
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
     }
 
     public class MyInterpolator extends LinearInterpolator {

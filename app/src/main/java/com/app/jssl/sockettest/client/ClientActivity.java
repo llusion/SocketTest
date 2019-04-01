@@ -10,7 +10,6 @@ import android.widget.TextView;
 import com.app.jssl.sockettest.R;
 import com.app.jssl.sockettest.base.BaseActivity;
 import com.app.jssl.sockettest.eventbus.InfoEntity;
-import com.app.jssl.sockettest.eventbus.MessageEvent;
 import com.app.jssl.sockettest.server.ServerActivity;
 import com.app.jssl.sockettest.utils.Constant;
 import com.app.jssl.sockettest.utils.SocketUtils;
@@ -26,7 +25,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.Arrays;
 
-import static com.app.jssl.sockettest.utils.Constant.info;
+import static com.app.jssl.sockettest.utils.Constant.logging;
 
 public class ClientActivity extends BaseActivity {
     private TextView send, init, receive, reconnect, log, server;
@@ -36,7 +35,7 @@ public class ClientActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_client);
         init = findViewById(R.id.init);
         reconnect = findViewById(R.id.reconnect);
         send = findViewById(R.id.send);
@@ -74,8 +73,7 @@ public class ClientActivity extends BaseActivity {
                                     BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(SocketUtils.outputStream));
                                     writer.write(socketData);
                                     writer.flush();
-                                    info.add(new InfoEntity(Constant.time, "心跳发送成功"));
-                                    EventBus.getDefault().postSticky(new MessageEvent(info));
+                                    EventBus.getDefault().postSticky(new InfoEntity(Constant.time, "心跳发送成功"));
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 } catch (JSONException e) {
@@ -101,8 +99,7 @@ public class ClientActivity extends BaseActivity {
                     while (((length = SocketUtils.inputStream.read(buffer)) != -1)) {
                         if (length > 0) {
                             String message = new String(Arrays.copyOf(buffer, length)).trim();
-                            info.add(new InfoEntity(Constant.time, "收到服务器消息！" + message));
-                            EventBus.getDefault().postSticky(new MessageEvent(info));
+                            EventBus.getDefault().postSticky(new InfoEntity(Constant.time, "收到服务器消息！" + message));
                         }
                     }
                 }
@@ -117,8 +114,9 @@ public class ClientActivity extends BaseActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
-    public void Event(MessageEvent messageEvent) {
-        log.setText(messageEvent.getInfo().get(0).getTime() + "\n" + messageEvent.getInfo().get(0).getMessage());
+    public void Event(InfoEntity info) {
+        logging.append(info.getTime() + "\n" + info.getMessage());
+        log.setText(logging.toString());
     }
 
     @Override

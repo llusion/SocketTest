@@ -13,8 +13,8 @@ import java.util.List;
  * Desc:   This is Constant：
  */
 public class Constant {
-
     public static List<InfoEntity> info = new ArrayList();
+    public static StringBuffer logging = new StringBuffer();
     public static String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
 
 }
