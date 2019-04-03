@@ -39,21 +39,21 @@
         android:text="启动服务"
         android:textColor="@color/colorWhite" />
 
-    <Button
-        android:id="@+id/reply"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:gravity="center"
-        android:text="发送信息" />
+    <!--<Button-->
+    <!--android:id="@+id/reply"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_marginTop="20dp"-->
+    <!--android:gravity="center"-->
+    <!--android:text="发送信息" />-->
 
-    <Button
-        android:id="@+id/disconnect"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:gravity="center"
-        android:text="断开连接" />
+    <!--<Button-->
+    <!--android:id="@+id/disconnect"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_marginTop="20dp"-->
+    <!--android:gravity="center"-->
+    <!--android:text="断开连接" />-->
 
     <Button
         android:id="@+id/stop"

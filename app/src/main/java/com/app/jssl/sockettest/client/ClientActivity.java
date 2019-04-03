@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 import com.app.jssl.sockettest.R;
 import com.app.jssl.sockettest.base.BaseActivity;
-import com.app.jssl.sockettest.eventbus.InfoEntity;
+import com.app.jssl.sockettest.eventbus.ClientEvent;
 import com.app.jssl.sockettest.server.ServerActivity;
 import com.app.jssl.sockettest.utils.Constant;
 import com.app.jssl.sockettest.utils.SocketUtils;
@@ -73,7 +73,7 @@ public class ClientActivity extends BaseActivity {
                                     BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(SocketUtils.outputStream));
                                     writer.write(socketData);
                                     writer.flush();
-                                    EventBus.getDefault().postSticky(new InfoEntity(Constant.time, "心跳发送成功"));
+                                    EventBus.getDefault().postSticky(new ClientEvent(Constant.time, "心跳发送成功"));
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 } catch (JSONException e) {
@@ -99,7 +99,7 @@ public class ClientActivity extends BaseActivity {
                     while (((length = SocketUtils.inputStream.read(buffer)) != -1)) {
                         if (length > 0) {
                             String message = new String(Arrays.copyOf(buffer, length)).trim();
-                            EventBus.getDefault().postSticky(new InfoEntity(Constant.time, "收到服务器消息！" + message));
+                            EventBus.getDefault().postSticky(new ClientEvent(Constant.time, "收到服务器消息！" + message));
                         }
                     }
                 }
@@ -114,7 +114,7 @@ public class ClientActivity extends BaseActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
-    public void Event(InfoEntity info) {
+    public void Event(ClientEvent info) {
         logging.append(info.getTime() + "\n" + info.getMessage());
         log.setText(logging.toString());
     }

@@ -7,11 +7,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.app.jssl.sockettest.R;
 import com.app.jssl.sockettest.client.ClientActivity;
-import com.app.jssl.sockettest.eventbus.InfoEntity;
+import com.app.jssl.sockettest.eventbus.ClientEvent;
+import com.app.jssl.sockettest.service.ServerService;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -25,15 +25,14 @@ import org.greenrobot.eventbus.ThreadMode;
 public class ServerActivity extends AppCompatActivity implements View.OnClickListener {
     private Button start, reply, stop, disConn;
     private TextView log, client;
-    private MySocketServer mySocketServer;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_server);
         start = findViewById(R.id.start);
-        reply = findViewById(R.id.reply);
-        disConn = findViewById(R.id.disconnect);
+//        reply = findViewById(R.id.reply);
+//        disConn = findViewById(R.id.disconnect);
         stop = findViewById(R.id.stop);
         client = findViewById(R.id.client);
         log = findViewById(R.id.log);
@@ -47,45 +46,39 @@ public class ServerActivity extends AppCompatActivity implements View.OnClickLis
 
     @Override
     public void onClick(View v) {
-        if (mySocketServer == null) {
-            Toast.makeText(this, "请先开启服务", Toast.LENGTH_SHORT).show();
-            return;
-        }
         switch (v.getId()) {
             case R.id.start:
                 startServer();
                 break;
             case R.id.stop:
-                mySocketServer.stopServer();
+//                mySocketServer.stopServer();
                 break;
             case R.id.client:
                 startActivity(new Intent(ServerActivity.this, ClientActivity.class));
                 break;
-            case R.id.reply:
-                mySocketServer.reply();
-                break;
-            case R.id.disconnect:
-                mySocketServer.disconn();
-                break;
+//            case R.id.reply:
+//                mySocketServer.reply();
+//                break;
+//            case R.id.disconnect:
+//                mySocketServer.disconn();
+//                break;
         }
     }
 
     private void startServer() {
-        WebConfig webConfig = new WebConfig();
-        webConfig.setPort(9001);
-        webConfig.setMaxParallels(10);
-        mySocketServer = new MySocketServer(webConfig);
-        mySocketServer.startServer();
+        Intent intent = new Intent();
+        intent.setClass(this, ServerService.class);
+        startService(intent);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
-    public void Event(InfoEntity infoEntity) {
-        log.setText(infoEntity.getTime() + "\n" + infoEntity.getMessage());
+    public void Event(ClientEvent ClientEvent) {
+        log.setText(ClientEvent.getTime() + "\n" + ClientEvent.getMessage());
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        EventBus.getDefault().unregister(this);
+
     }
 }

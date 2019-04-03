@@ -2,7 +2,7 @@ package com.app.jssl.sockettest.utils;
 
 import android.content.Context;
 
-import com.app.jssl.sockettest.eventbus.InfoEntity;
+import com.app.jssl.sockettest.eventbus.ClientEvent;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -43,7 +43,7 @@ public class SocketUtils {
                         socket.setTcpNoDelay(true);
                         outputStream = socket.getOutputStream();
                         inputStream = socket.getInputStream();
-                        EventBus.getDefault().postSticky(new InfoEntity(Constant.time, "socket连接成功！" + socket.toString()));
+                        EventBus.getDefault().postSticky(new ClientEvent(Constant.time, "socket连接成功！" + socket.toString()));
                     } catch (UnknownHostException e) {
                         e.printStackTrace();
                     } catch (IOException e) {

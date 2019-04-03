@@ -1,6 +1,7 @@
 package com.app.jssl.sockettest.server;
 
-import com.app.jssl.sockettest.eventbus.InfoEntity;
+import com.app.jssl.sockettest.eventbus.ServerEvent;
+import com.app.jssl.sockettest.eventbus.ClientEvent;
 import com.app.jssl.sockettest.utils.Constant;
 
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
@@ -50,10 +51,10 @@ public class MySocketServer {
             InetSocketAddress socketAddress = new InetSocketAddress(webConfig.getPort());
             socket = new ServerSocket();
             socket.bind(socketAddress);
-            EventBus.getDefault().postSticky(new InfoEntity(Constant.time, "端口开启：" + socket.getLocalPort()));
+            EventBus.getDefault().postSticky(new ServerEvent(Constant.time, "端口开启：" + socket.getLocalPort()));
             acceptData();
         } catch (IOException e) {
-            EventBus.getDefault().postSticky(new InfoEntity(Constant.time, "服务端口已经开启，请勿重复点击"));
+            EventBus.getDefault().postSticky(new ServerEvent(Constant.time, "服务端口已经开启，请勿重复点击"));
         }
     }
 
@@ -66,7 +67,6 @@ public class MySocketServer {
 
     private void onAcceptRemote(Socket remote) {
         try {
-            remote.getOutputStream().write("......connectting......".getBytes());
             // 从Socket当中得到InputStream对象
             InputStream inputStream = remote.getInputStream();
             byte buffer[] = new byte[1024 * 4];
@@ -74,7 +74,7 @@ public class MySocketServer {
             // 从InputStream当中读取客户端所发送的数据
             while ((temp = inputStream.read(buffer)) != -1) {
                 String message = new String(Arrays.copyOf(buffer, temp)).trim();
-                EventBus.getDefault().postSticky(new InfoEntity(Constant.time, "收到客户端消息：" + message));
+                EventBus.getDefault().postSticky(new ClientEvent(Constant.time, "收到客户端消息：" + message));
                 JSONObject jsonObject = new JSONObject(message);
                 //todo 定协议 接收的数据格式和响应的数据格式
                 remote.getOutputStream().write(buffer, 0, temp);
@@ -126,6 +126,6 @@ public class MySocketServer {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        EventBus.getDefault().postSticky(new InfoEntity(Constant.time, "服务端关闭"));
+        EventBus.getDefault().postSticky(new ClientEvent(Constant.time, "服务端关闭"));
     }
 }

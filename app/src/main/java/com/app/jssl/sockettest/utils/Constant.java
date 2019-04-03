@@ -1,6 +1,6 @@
 package com.app.jssl.sockettest.utils;
 
-import com.app.jssl.sockettest.eventbus.InfoEntity;
+import com.app.jssl.sockettest.eventbus.ClientEvent;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -13,7 +13,7 @@ import java.util.List;
  * Desc:   This is Constant：
  */
 public class Constant {
-    public static List<InfoEntity> info = new ArrayList();
+    public static List<ClientEvent> info = new ArrayList();
     public static StringBuffer logging = new StringBuffer();
     public static String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
 

@@ -2,14 +2,14 @@ package com.app.jssl.sockettest.eventbus;
 
 /**
  * Author: ls
- * Time:   2019/3/29 15:43
- * Desc:   This is InfoEntity：
+ * Time:   2019/4/3 11:15
+ * Desc:   This is ServerEvent：
  */
-public class InfoEntity {
+public class ServerEvent {
     private String time;
     private String message;
 
-    public InfoEntity(String time, String message) {
+    public ServerEvent(String time, String message) {
         this.time = time;
         this.message = message;
     }
