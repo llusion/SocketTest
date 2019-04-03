@@ -19,7 +19,6 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -91,7 +90,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             mBtnLogin.setClickable(true);
         }
     }
-
 
     private void inputAnimator(final View view, float w) {
         set = new AnimatorSet();

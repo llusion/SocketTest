@@ -5,6 +5,8 @@ import com.app.jssl.sockettest.utils.Constant;
 
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.greenrobot.eventbus.EventBus;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,18 +45,6 @@ public class MySocketServer {
         threadPools.execute(() -> startPort());
     }
 
-    /**
-     * 关闭server
-     */
-    public void stopServer() throws IOException {
-        if (!isEnable) {
-            return;
-        }
-        isEnable = true;
-        socket.close();
-        socket = null;
-    }
-
     private void startPort() {
         try {
             InetSocketAddress socketAddress = new InetSocketAddress(webConfig.getPort());
@@ -63,7 +53,7 @@ public class MySocketServer {
             EventBus.getDefault().postSticky(new InfoEntity(Constant.time, "端口开启：" + socket.getLocalPort()));
             acceptData();
         } catch (IOException e) {
-            e.printStackTrace();
+            EventBus.getDefault().postSticky(new InfoEntity(Constant.time, "服务端口已经开启，请勿重复点击"));
         }
     }
 
@@ -76,7 +66,7 @@ public class MySocketServer {
 
     private void onAcceptRemote(Socket remote) {
         try {
-            remote.getOutputStream().write("connected successful".getBytes());
+            remote.getOutputStream().write("......connectting......".getBytes());
             // 从Socket当中得到InputStream对象
             InputStream inputStream = remote.getInputStream();
             byte buffer[] = new byte[1024 * 4];
@@ -85,10 +75,57 @@ public class MySocketServer {
             while ((temp = inputStream.read(buffer)) != -1) {
                 String message = new String(Arrays.copyOf(buffer, temp)).trim();
                 EventBus.getDefault().postSticky(new InfoEntity(Constant.time, "收到客户端消息：" + message));
+                JSONObject jsonObject = new JSONObject(message);
+                //todo 定协议 接收的数据格式和响应的数据格式
                 remote.getOutputStream().write(buffer, 0, temp);
             }
         } catch (IOException e) {
             e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
+    }
+
+    public void reply() {
+        try {
+            Socket remote = socket.accept();
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("server", "服务器主动发送消息");
+            remote.getOutputStream().write(new Byte(jsonObject.toString()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 断开客户端的连接
+     */
+    public void disconn() {
+        try {
+            Socket remote = socket.accept();
+            remote.getInetAddress();
+            remote.shutdownOutput();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 关闭server
+     */
+    public void stopServer() {
+        if (!isEnable) {
+            return;
+        }
+        try {
+            isEnable = false;
+            socket.close();
+            socket = null;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        EventBus.getDefault().postSticky(new InfoEntity(Constant.time, "服务端关闭"));
     }
 }

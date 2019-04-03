@@ -62,12 +62,16 @@
         android:gravity="center"
         android:text="启动接收线程" />
 
-    <TextView
-        android:id="@+id/log"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="30px"
-        android:layout_marginRight="30px"
-        android:layout_marginTop="50dp" />
+        android:layout_height="wrap_content">
 
+        <TextView
+            android:id="@+id/log"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30px"
+            android:layout_marginRight="30px"
+            android:layout_marginTop="50dp" />
+    </ScrollView>
 </LinearLayout>

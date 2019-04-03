@@ -8,13 +8,15 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="120px"
-        android:background="@color/colorAccent">
+        android:background="@color/colorTiffany">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:text="服务器端" />
+            android:text="服务器端"
+            android:textColor="@color/colorWhite"
+            android:textSize="18sp" />
 
         <TextView
             android:id="@+id/client"
@@ -22,7 +24,9 @@
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
-            android:text="打开客户端" />
+            android:text="打开客户端"
+            android:textColor="@color/colorWhite"
+            android:textSize="15sp" />
     </RelativeLayout>
 
     <Button
@@ -30,8 +34,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="50dp"
+        android:background="@color/colorTiffany"
         android:gravity="center"
-        android:text="启动服务" />
+        android:text="启动服务"
+        android:textColor="@color/colorWhite" />
 
     <Button
         android:id="@+id/reply"
@@ -39,21 +45,35 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:gravity="center"
-        android:text="响应" />
+        android:text="发送信息" />
+
+    <Button
+        android:id="@+id/disconnect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:text="断开连接" />
 
     <Button
         android:id="@+id/stop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
+        android:background="@color/colorTiffany"
         android:gravity="center"
-        android:text="关闭服务" />
+        android:text="关闭服务"
+        android:textColor="@color/colorWhite" />
 
-
-    <TextView
-        android:id="@+id/log"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="20dp" />
+        android:layout_height="match_parent"
+        android:layout_marginTop="20dp">
 
+        <TextView
+            android:id="@+id/log"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </ScrollView>
 </LinearLayout>
