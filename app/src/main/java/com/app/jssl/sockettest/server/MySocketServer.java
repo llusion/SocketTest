@@ -102,8 +102,8 @@ public class MySocketServer {
                 JSONObject jsonObject = new JSONObject(message);
                 //todo 定协议 接收的数据格式和响应的数据格式
                 remote.getOutputStream().write(buffer, 0, temp);
-                EventBus.getDefault().post(new ClientEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()),
-                        "收到服务器的响应消息：" + message));
+                EventBus.getDefault().post(new ServerEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()),
+                        "发送响应消息：" + message));
             }
         } catch (IOException e) {
             e.printStackTrace();

@@ -5,13 +5,13 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.app.jssl.sockettest.R;
 import com.app.jssl.sockettest.base.BaseActivity;
 import com.app.jssl.sockettest.eventbus.ClientEvent;
 import com.app.jssl.sockettest.server.ServerActivity;
-import com.app.jssl.sockettest.utils.Constant;
 import com.app.jssl.sockettest.utils.SocketUtils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -29,8 +29,9 @@ import java.util.Date;
 
 import static com.app.jssl.sockettest.utils.Constant.clientLog;
 
-public class ClientActivity extends BaseActivity {
-    private TextView send, init, receive, reconnect, log, server;
+public class ClientActivity extends BaseActivity implements View.OnClickListener {
+    private Button send, init, receive, reconnect;
+    private TextView server, log;
     private Handler mHandler;
     private Runnable runnable;
 
@@ -46,55 +47,43 @@ public class ClientActivity extends BaseActivity {
         log = findViewById(R.id.log);
         log.setText(clientLog);
         EventBus.getDefault().register(this);
-
-        //打开服务器端
         server.setOnClickListener(v -> startActivity(new Intent(ClientActivity.this, ServerActivity.class)));
-        //socket连接
-        init.setOnClickListener(v -> initSocket());
+        init.setOnClickListener(this);
+        send.setOnClickListener(this);
+        receive.setOnClickListener(this);
+        reconnect.setOnClickListener(this);
+    }
 
-        //socket重连
-        reconnect.setOnClickListener(v -> {
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.init:
+                initSocket();
+                break;
+            case R.id.reconnect:
+                reconnect();
+                break;
+            case R.id.send:
+                sendMessage();
+                break;
+            case R.id.receive:
+                receive();
+                break;
+        }
+    }
 
-        });
+    /**
+     * 重连socket
+     */
+    private void reconnect() {
 
-        //心跳
-        send.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                threadPools.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        Looper.prepare();
-                        mHandler = new Handler();
-                        runnable = new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    JSONObject jsonObject = new JSONObject();
-                                    jsonObject.put("UserId", "1");
-                                    String socketData = jsonObject.toString();
-                                    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(SocketUtils.outputStream));
-                                    writer.write(socketData);
-                                    writer.flush();
-                                    EventBus.getDefault().post(new ClientEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
-                                            , "心跳发送成功"));
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                } catch (JSONException e) {
-                                    e.printStackTrace();
-                                }
-                                mHandler.postDelayed(this, 60 * 1000);
-                            }
-                        };
-                        mHandler.post(runnable);
-                        Looper.loop();
-                    }
-                });
-            }
-        });
+    }
 
-        //接收
-        receive.setOnClickListener(v -> threadPools.execute(() -> {
+    /**
+     * 启动接收线程
+     */
+    private void receive() {
+        threadPools.execute(() -> {
             try {
                 while (true) {
                     SocketUtils.getSocket().sendUrgentData(0);
@@ -111,9 +100,47 @@ public class ClientActivity extends BaseActivity {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }));
+        });
     }
 
+    /**
+     * 发送心跳
+     */
+    private void sendMessage() {
+        threadPools.execute(new Runnable() {
+            @Override
+            public void run() {
+                Looper.prepare();
+                mHandler = new Handler();
+                runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            JSONObject jsonObject = new JSONObject();
+                            jsonObject.put("UserId", "1");
+                            String socketData = jsonObject.toString();
+                            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(SocketUtils.outputStream));
+                            writer.write(socketData);
+                            writer.flush();
+                            EventBus.getDefault().post(new ClientEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
+                                    , "心跳发送成功"));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        mHandler.postDelayed(this, 60 * 1000);
+                    }
+                };
+                mHandler.post(runnable);
+                Looper.loop();
+            }
+        });
+    }
+
+    /**
+     * 获取socket 连接到本服务器
+     */
     private void initSocket() {
         threadPools.execute(() -> SocketUtils.getSocket());
     }

@@ -30,37 +30,45 @@
 
     </RelativeLayout>
 
-    <TextView
+    <Button
         android:id="@+id/init"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="100dp"
+        android:background="@color/colorTiffany"
         android:gravity="center"
-        android:text="连接socket" />
+        android:text="连接socket"
+        android:textColor="@color/colorWhite" />
 
-    <TextView
+    <Button
         android:id="@+id/reconnect"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
+        android:background="@color/colorTiffany"
         android:gravity="center"
-        android:text="重连socket" />
+        android:text="重连socket"
+        android:textColor="@color/colorWhite" />
 
-    <TextView
+    <Button
         android:id="@+id/send"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
+        android:background="@color/colorTiffany"
         android:gravity="center"
-        android:text="发送心跳" />
+        android:text="发送心跳"
+        android:textColor="@color/colorWhite" />
 
-    <TextView
+    <Button
         android:id="@+id/receive"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
+        android:background="@color/colorTiffany"
         android:gravity="center"
-        android:text="启动接收线程" />
+        android:text="启动接收线程"
+        android:textColor="@color/colorWhite" />
 
     <ScrollView
         android:layout_width="match_parent"
