@@ -46,12 +46,13 @@ public class ClientActivity extends BaseActivity implements View.OnClickListener
         receive = findViewById(R.id.receive);
         log = findViewById(R.id.log);
         log.setText(clientLog);
-        EventBus.getDefault().register(this);
         server.setOnClickListener(v -> startActivity(new Intent(ClientActivity.this, ServerActivity.class)));
         init.setOnClickListener(this);
         send.setOnClickListener(this);
         receive.setOnClickListener(this);
         reconnect.setOnClickListener(this);
+        if (EventBus.getDefault().isRegistered(ClientActivity.this)) return;
+        EventBus.getDefault().register(ClientActivity.this);
     }
 
     @Override
@@ -154,8 +155,8 @@ public class ClientActivity extends BaseActivity implements View.OnClickListener
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (EventBus.getDefault().isRegistered(this)) {
-            EventBus.getDefault().unregister(this);
+        if (EventBus.getDefault().isRegistered(ClientActivity.this)) {
+            EventBus.getDefault().unregister(ClientActivity.this);
         }
     }
 }

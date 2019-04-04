@@ -1,8 +1,6 @@
 package com.app.jssl.sockettest.server;
 
-import com.app.jssl.sockettest.eventbus.ClientEvent;
 import com.app.jssl.sockettest.eventbus.ServerEvent;
-import com.app.jssl.sockettest.utils.Constant;
 
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.greenrobot.eventbus.EventBus;
@@ -11,11 +9,9 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;

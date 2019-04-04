@@ -10,7 +10,6 @@ import android.widget.TextView;
 
 import com.app.jssl.sockettest.R;
 import com.app.jssl.sockettest.client.ClientActivity;
-import com.app.jssl.sockettest.eventbus.ClientEvent;
 import com.app.jssl.sockettest.eventbus.ServerEvent;
 import com.app.jssl.sockettest.service.ServerService;
 
@@ -38,10 +37,11 @@ public class ServerActivity extends AppCompatActivity implements View.OnClickLis
         client = findViewById(R.id.client);
         log = findViewById(R.id.log);
         log.setText(serverLog);
-        EventBus.getDefault().register(this);
         start.setOnClickListener(this);
         stop.setOnClickListener(this);
         client.setOnClickListener(this);
+        if (EventBus.getDefault().isRegistered(ServerActivity.this)) return;
+        EventBus.getDefault().register(ServerActivity.this);
     }
 
     @Override
@@ -74,8 +74,8 @@ public class ServerActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (EventBus.getDefault().isRegistered(this)) {
-            EventBus.getDefault().unregister(this);
+        if (EventBus.getDefault().isRegistered(ServerActivity.this)) {
+            EventBus.getDefault().unregister(ServerActivity.this);
         }
     }
 }
