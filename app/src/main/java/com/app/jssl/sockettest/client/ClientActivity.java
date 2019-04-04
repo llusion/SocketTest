@@ -23,9 +23,11 @@ import org.json.JSONObject;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 
-import static com.app.jssl.sockettest.utils.Constant.logging;
+import static com.app.jssl.sockettest.utils.Constant.clientLog;
 
 public class ClientActivity extends BaseActivity {
     private TextView send, init, receive, reconnect, log, server;
@@ -42,6 +44,7 @@ public class ClientActivity extends BaseActivity {
         server = findViewById(R.id.server);
         receive = findViewById(R.id.receive);
         log = findViewById(R.id.log);
+        log.setText(clientLog);
         EventBus.getDefault().register(this);
 
         //打开服务器端
@@ -73,7 +76,8 @@ public class ClientActivity extends BaseActivity {
                                     BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(SocketUtils.outputStream));
                                     writer.write(socketData);
                                     writer.flush();
-                                    EventBus.getDefault().postSticky(new ClientEvent(Constant.time, "心跳发送成功"));
+                                    EventBus.getDefault().post(new ClientEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
+                                            , "心跳发送成功"));
                                 } catch (IOException e) {
                                     e.printStackTrace();
                                 } catch (JSONException e) {
@@ -99,7 +103,8 @@ public class ClientActivity extends BaseActivity {
                     while (((length = SocketUtils.inputStream.read(buffer)) != -1)) {
                         if (length > 0) {
                             String message = new String(Arrays.copyOf(buffer, length)).trim();
-                            EventBus.getDefault().postSticky(new ClientEvent(Constant.time, "收到服务器消息！" + message));
+                            EventBus.getDefault().post(new ClientEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
+                                    , "---接收线程----" + "\n" + "收到服务器消息！" + message));
                         }
                     }
                 }
@@ -113,10 +118,10 @@ public class ClientActivity extends BaseActivity {
         threadPools.execute(() -> SocketUtils.getSocket());
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void Event(ClientEvent info) {
-        logging.append(info.getTime() + "\n" + info.getMessage());
-        log.setText(logging.toString());
+        clientLog.append(info.getTime() + "\n" + info.getMessage() + "\n");
+        log.setText(clientLog.toString());
     }
 
     @Override

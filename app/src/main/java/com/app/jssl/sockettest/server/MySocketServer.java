@@ -1,7 +1,7 @@
 package com.app.jssl.sockettest.server;
 
-import com.app.jssl.sockettest.eventbus.ServerEvent;
 import com.app.jssl.sockettest.eventbus.ClientEvent;
+import com.app.jssl.sockettest.eventbus.ServerEvent;
 import com.app.jssl.sockettest.utils.Constant;
 
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
@@ -11,10 +11,14 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
@@ -27,15 +31,23 @@ import java.util.concurrent.TimeUnit;
  * Desc:   This is MySocketServer：
  */
 public class MySocketServer {
+    private volatile static MySocketServer server;
     private ThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("server").daemon(true).build();
     public ExecutorService threadPools = new ThreadPoolExecutor(5, 20, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(),
             threadFactory, new ThreadPoolExecutor.AbortPolicy());
     private boolean isEnable;
-    private final WebConfig webConfig;
     private ServerSocket socket;
+    private InetSocketAddress socketAddress;
 
-    public MySocketServer(WebConfig webConfig) {
-        this.webConfig = webConfig;
+    public static MySocketServer getInstance() {
+        if (server == null) {
+            synchronized (MySocketServer.class) {
+                if (server == null) {
+                    server = new MySocketServer();
+                }
+            }
+        }
+        return server;
     }
 
     /**
@@ -46,15 +58,26 @@ public class MySocketServer {
         threadPools.execute(() -> startPort());
     }
 
+    /**
+     * 一一对应
+     */
     private void startPort() {
         try {
-            InetSocketAddress socketAddress = new InetSocketAddress(webConfig.getPort());
+            socketAddress = new InetSocketAddress(9001);
             socket = new ServerSocket();
             socket.bind(socketAddress);
-            EventBus.getDefault().postSticky(new ServerEvent(Constant.time, "端口开启：" + socket.getLocalPort()));
+            EventBus.getDefault().post(new ServerEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
+                    , "端口开启：" + socket.getLocalPort()));
             acceptData();
         } catch (IOException e) {
-            EventBus.getDefault().postSticky(new ServerEvent(Constant.time, "服务端口已经开启，请勿重复点击"));
+            if (socket.isClosed()) {
+                EventBus.getDefault().post(new ServerEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
+                        , "服务端关闭"));
+            }
+            if (socket.isBound()) {
+                EventBus.getDefault().post(new ServerEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
+                        , "服务端口已经开启，请勿重复点击"));
+            }
         }
     }
 
@@ -74,10 +97,13 @@ public class MySocketServer {
             // 从InputStream当中读取客户端所发送的数据
             while ((temp = inputStream.read(buffer)) != -1) {
                 String message = new String(Arrays.copyOf(buffer, temp)).trim();
-                EventBus.getDefault().postSticky(new ClientEvent(Constant.time, "收到客户端消息：" + message));
+                EventBus.getDefault().post(new ServerEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()),
+                        "收到客户端的消息：" + message));
                 JSONObject jsonObject = new JSONObject(message);
                 //todo 定协议 接收的数据格式和响应的数据格式
                 remote.getOutputStream().write(buffer, 0, temp);
+                EventBus.getDefault().post(new ClientEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()),
+                        "收到服务器的响应消息：" + message));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -100,19 +126,6 @@ public class MySocketServer {
     }
 
     /**
-     * 断开客户端的连接
-     */
-    public void disconn() {
-        try {
-            Socket remote = socket.accept();
-            remote.getInetAddress();
-            remote.shutdownOutput();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
      * 关闭server
      */
     public void stopServer() {
@@ -126,6 +139,7 @@ public class MySocketServer {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        EventBus.getDefault().postSticky(new ClientEvent(Constant.time, "服务端关闭"));
+        EventBus.getDefault().post(new ServerEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()),
+                "服务端关闭"));
     }
 }

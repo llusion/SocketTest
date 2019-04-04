@@ -27,6 +27,7 @@
         </activity>
 
         <service android:name=".service.SocketService" />
+        <service android:name=".service.ServerService" />
 
     </application>
 

@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class Constant {
     public static List<ClientEvent> info = new ArrayList();
-    public static StringBuffer logging = new StringBuffer();
-    public static String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+    public static StringBuffer clientLog = new StringBuffer();
+    public static StringBuffer serverLog = new StringBuffer();
 
 }

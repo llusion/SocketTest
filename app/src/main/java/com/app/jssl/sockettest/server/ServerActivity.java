@@ -11,11 +11,14 @@ import android.widget.TextView;
 import com.app.jssl.sockettest.R;
 import com.app.jssl.sockettest.client.ClientActivity;
 import com.app.jssl.sockettest.eventbus.ClientEvent;
+import com.app.jssl.sockettest.eventbus.ServerEvent;
 import com.app.jssl.sockettest.service.ServerService;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
+import static com.app.jssl.sockettest.utils.Constant.serverLog;
 
 /**
  * Author: ls
@@ -23,7 +26,7 @@ import org.greenrobot.eventbus.ThreadMode;
  * Desc:   This is ServerActivity：
  */
 public class ServerActivity extends AppCompatActivity implements View.OnClickListener {
-    private Button start, reply, stop, disConn;
+    private Button start, stop;
     private TextView log, client;
 
     @Override
@@ -31,17 +34,14 @@ public class ServerActivity extends AppCompatActivity implements View.OnClickLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_server);
         start = findViewById(R.id.start);
-//        reply = findViewById(R.id.reply);
-//        disConn = findViewById(R.id.disconnect);
         stop = findViewById(R.id.stop);
         client = findViewById(R.id.client);
         log = findViewById(R.id.log);
+        log.setText(serverLog);
         EventBus.getDefault().register(this);
         start.setOnClickListener(this);
         stop.setOnClickListener(this);
         client.setOnClickListener(this);
-        reply.setOnClickListener(this);
-        disConn.setOnClickListener(this);
     }
 
     @Override
@@ -49,36 +49,33 @@ public class ServerActivity extends AppCompatActivity implements View.OnClickLis
         switch (v.getId()) {
             case R.id.start:
                 startServer();
+                start.setClickable(false);
                 break;
             case R.id.stop:
-//                mySocketServer.stopServer();
+//                MySocketServer.getInstance().stopServer();
                 break;
             case R.id.client:
                 startActivity(new Intent(ServerActivity.this, ClientActivity.class));
                 break;
-//            case R.id.reply:
-//                mySocketServer.reply();
-//                break;
-//            case R.id.disconnect:
-//                mySocketServer.disconn();
-//                break;
         }
     }
 
     private void startServer() {
-        Intent intent = new Intent();
-        intent.setClass(this, ServerService.class);
+        Intent intent = new Intent(ServerActivity.this, ServerService.class);
         startService(intent);
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
-    public void Event(ClientEvent ClientEvent) {
-        log.setText(ClientEvent.getTime() + "\n" + ClientEvent.getMessage());
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void Event(ServerEvent serverEvent) {
+        serverLog.append(serverEvent.getTime() + "\n" + serverEvent.getMessage() + "\n");
+        log.setText(serverLog);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
+        if (EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().unregister(this);
+        }
     }
 }

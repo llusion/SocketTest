@@ -11,6 +11,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Author: ls
@@ -43,7 +45,8 @@ public class SocketUtils {
                         socket.setTcpNoDelay(true);
                         outputStream = socket.getOutputStream();
                         inputStream = socket.getInputStream();
-                        EventBus.getDefault().postSticky(new ClientEvent(Constant.time, "socket连接成功！" + socket.toString()));
+                        EventBus.getDefault().postSticky(new ClientEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()),
+                                "socket连接成功！" + socket.toString()));
                     } catch (UnknownHostException e) {
                         e.printStackTrace();
                     } catch (IOException e) {
