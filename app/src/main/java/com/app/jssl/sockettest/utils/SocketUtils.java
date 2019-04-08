@@ -50,7 +50,8 @@ public class SocketUtils {
                     } catch (UnknownHostException e) {
                         e.printStackTrace();
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        EventBus.getDefault().postSticky(new ClientEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()),
+                                "无法连接到服务器，请检查ip和端口号//服务器已关闭"));
                     }
                 }
             }

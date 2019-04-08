@@ -46,7 +46,9 @@ public class ClientActivity extends BaseActivity implements View.OnClickListener
         receive = findViewById(R.id.receive);
         log = findViewById(R.id.log);
         log.setText(clientLog);
-        server.setOnClickListener(v -> startActivity(new Intent(ClientActivity.this, ServerActivity.class)));
+        server.setOnClickListener(v -> {
+            finish();
+        });
         init.setOnClickListener(this);
         send.setOnClickListener(this);
         receive.setOnClickListener(this);
@@ -86,16 +88,14 @@ public class ClientActivity extends BaseActivity implements View.OnClickListener
     private void receive() {
         threadPools.execute(() -> {
             try {
-                while (true) {
-                    SocketUtils.getSocket().sendUrgentData(0);
-                    byte[] buffer = new byte[1024 * 2];
-                    int length = 0;
-                    while (((length = SocketUtils.inputStream.read(buffer)) != -1)) {
-                        if (length > 0) {
-                            String message = new String(Arrays.copyOf(buffer, length)).trim();
-                            EventBus.getDefault().post(new ClientEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
-                                    , "---接收线程----" + "\n" + "收到服务器消息！" + message));
-                        }
+                SocketUtils.getSocket().sendUrgentData(0);
+                byte[] buffer = new byte[1024 * 2];
+                int length = 0;
+                while (((length = SocketUtils.inputStream.read(buffer)) != -1)) {
+                    if (length > 0) {
+                        String message = new String(Arrays.copyOf(buffer, length)).trim();
+                        EventBus.getDefault().post(new ClientEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
+                                , "---接收线程----" + "\n" + "收到服务器消息！" + message));
                     }
                 }
             } catch (Exception e) {
@@ -126,9 +126,16 @@ public class ClientActivity extends BaseActivity implements View.OnClickListener
                             EventBus.getDefault().post(new ClientEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
                                     , "心跳发送成功"));
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            EventBus.getDefault().post(new ClientEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
+                                    , "当前连接已断开。。。请重连"));
+                            SocketUtils.release();
                         } catch (JSONException e) {
                             e.printStackTrace();
+                        } catch (NullPointerException e) {
+                            EventBus.getDefault().post(new ClientEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
+                                    , "socket连接已断开"));
+                            SocketUtils.release();
+                            mHandler.removeCallbacks(this);
                         }
                         mHandler.postDelayed(this, 60 * 1000);
                     }

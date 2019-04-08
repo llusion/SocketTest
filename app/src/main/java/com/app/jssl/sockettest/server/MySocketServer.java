@@ -34,6 +34,7 @@ public class MySocketServer {
     private boolean isEnable;
     private ServerSocket socket;
     private InetSocketAddress socketAddress;
+    private Socket clientSocket;
 
     public static MySocketServer getInstance() {
         if (server == null) {
@@ -77,11 +78,18 @@ public class MySocketServer {
         }
     }
 
-    private void acceptData() throws IOException {
-        while (isEnable) {
-            final Socket remote = socket.accept();
-            threadPools.submit(() -> onAcceptRemote(remote));
-        }
+    private void acceptData() {
+        threadPools.submit(() -> {
+            while (isEnable) {
+                try {
+                    clientSocket = socket.accept();
+                    onAcceptRemote(clientSocket);
+                } catch (IOException e) {
+                    EventBus.getDefault().post(new ServerEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
+                            , "服务器断开，不再接收数据"));
+                }
+            }
+        });
     }
 
     private void onAcceptRemote(Socket remote) {
@@ -130,6 +138,13 @@ public class MySocketServer {
         }
         try {
             isEnable = false;
+            if (clientSocket != null) {
+                clientSocket.close();
+                clientSocket = null;
+            } else {
+                EventBus.getDefault().post(new ServerEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()),
+                        "连接已关闭，不再接收数据"));
+            }
             socket.close();
             socket = null;
         } catch (IOException e) {

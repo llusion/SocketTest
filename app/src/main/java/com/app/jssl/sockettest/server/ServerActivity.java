@@ -52,10 +52,11 @@ public class ServerActivity extends AppCompatActivity implements View.OnClickLis
                 start.setClickable(false);
                 break;
             case R.id.stop:
-//                MySocketServer.getInstance().stopServer();
+                MySocketServer.getInstance().stopServer();
                 break;
             case R.id.client:
                 startActivity(new Intent(ServerActivity.this, ClientActivity.class));
+//                finish();
                 break;
         }
     }
