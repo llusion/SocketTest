@@ -1,6 +1,5 @@
 package com.app.jssl.sockettest.client;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -11,7 +10,6 @@ import android.widget.TextView;
 import com.app.jssl.sockettest.R;
 import com.app.jssl.sockettest.base.BaseActivity;
 import com.app.jssl.sockettest.eventbus.ClientEvent;
-import com.app.jssl.sockettest.server.ServerActivity;
 import com.app.jssl.sockettest.utils.SocketUtils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -79,7 +77,7 @@ public class ClientActivity extends BaseActivity implements View.OnClickListener
      * 重连socket
      */
     private void reconnect() {
-
+        initSocket();
     }
 
     /**
