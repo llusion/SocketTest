@@ -1,14 +1,18 @@
 package com.app.jssl.sockettest.server;
 
 import com.app.jssl.sockettest.eventbus.ServerEvent;
+import com.app.jssl.sockettest.utils.Time;
 
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.greenrobot.eventbus.EventBus;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -60,32 +64,30 @@ public class MySocketServer {
      */
     private void startPort() {
         try {
-            socketAddress = new InetSocketAddress(9001);
+            socketAddress = new InetSocketAddress(InetAddress.getLocalHost(), 9001);
             socket = new ServerSocket();
             socket.bind(socketAddress);
-            EventBus.getDefault().post(new ServerEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
-                    , "端口开启：" + socket.getLocalPort()));
+            EventBus.getDefault().post(new ServerEvent(Time.now(), "端口开启：" + socket.getLocalPort()));
+            //堵塞
             acceptData();
         } catch (IOException e) {
             if (socket.isClosed()) {
-                EventBus.getDefault().post(new ServerEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
-                        , "服务端关闭"));
+                EventBus.getDefault().post(new ServerEvent(Time.now(), "服务端关闭"));
             }
             if (socket.isBound()) {
-                EventBus.getDefault().post(new ServerEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
-                        , "服务端口已经开启，请勿重复点击"));
+                EventBus.getDefault().post(new ServerEvent(Time.now(), "服务端口已经开启"));
             }
         }
     }
 
     private void acceptData() {
-        threadPools.submit(() -> {
+        threadPools.execute(() -> {
             while (isEnable) {
                 try {
                     clientSocket = socket.accept();
                     onAcceptRemote(clientSocket);
                 } catch (IOException e) {
-                    EventBus.getDefault().post(new ServerEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
+                    EventBus.getDefault().post(new ServerEvent(Time.now()
                             , "服务器断开，不再接收数据"));
                 }
             }
@@ -101,13 +103,26 @@ public class MySocketServer {
             // 从InputStream当中读取客户端所发送的数据
             while ((temp = inputStream.read(buffer)) != -1) {
                 String message = new String(Arrays.copyOf(buffer, temp)).trim();
-                EventBus.getDefault().post(new ServerEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()),
+                EventBus.getDefault().post(new ServerEvent(Time.now(),
                         "收到客户端的消息：" + message));
                 JSONObject jsonObject = new JSONObject(message);
+                JSONObject response = new JSONObject();
                 //todo 定协议 接收的数据格式和响应的数据格式
-                remote.getOutputStream().write(buffer, 0, temp);
-                EventBus.getDefault().post(new ServerEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()),
-                        "发送响应消息：" + message));
+                if (jsonObject.get("type").equals("login")) {
+                    if (jsonObject.get("name").equals("admin") && jsonObject.get("passowrd").equals("123")) {
+                        response.put("result", "true");
+                        response.put("message", "登录成功");
+                    } else {
+                        response.put("result", "false");
+                        response.put("message", "账号或密码不对");
+                    }
+                }
+                if (jsonObject.get("type").equals("connect")) {
+                    response.put("message", "连接成功");
+                }
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(remote.getOutputStream()));
+                writer.write(response.toString());
+                writer.flush();
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -142,7 +157,7 @@ public class MySocketServer {
                 clientSocket.close();
                 clientSocket = null;
             } else {
-                EventBus.getDefault().post(new ServerEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()),
+                EventBus.getDefault().post(new ServerEvent(Time.now(),
                         "连接已关闭，不再接收数据"));
             }
             socket.close();
@@ -150,7 +165,7 @@ public class MySocketServer {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        EventBus.getDefault().post(new ServerEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()),
+        EventBus.getDefault().post(new ServerEvent(Time.now(),
                 "服务端关闭"));
     }
 }

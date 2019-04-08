@@ -23,6 +23,8 @@ import static com.app.jssl.sockettest.utils.Constant.serverLog;
  * Author: ls
  * Time:   2019/3/29 11:58
  * Desc:   This is ServerActivity：
+ * <p>
+ * 模拟服务器端页面
  */
 public class ServerActivity extends AppCompatActivity implements View.OnClickListener {
     private Button start, stop;

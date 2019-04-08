@@ -133,7 +133,7 @@ public class ClientActivity extends BaseActivity implements View.OnClickListener
                             EventBus.getDefault().post(new ClientEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
                                     , "socket连接已断开"));
                             SocketUtils.release();
-                            mHandler.removeCallbacks(this);
+                            mHandler.removeCallbacks(runnable);
                         }
                         mHandler.postDelayed(this, 60 * 1000);
                     }

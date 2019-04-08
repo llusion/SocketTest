@@ -23,17 +23,22 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.app.jssl.sockettest.R;
-import com.app.jssl.sockettest.eventbus.LoginEntity;
+import com.app.jssl.sockettest.eventbus.LoginEvent;
+import com.app.jssl.sockettest.service.ServerService;
 import com.app.jssl.sockettest.service.SocketService;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Author: ls
  * Time:   2019/4/1 10:10
  * Desc:   This is LoginActivity：
+ * <p>
+ * 登录页面
  */
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
     private TextView mBtnLogin;
@@ -49,7 +54,16 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         EventBus.getDefault().register(this);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_login);
+        startServer();
         initView();
+    }
+
+    /**
+     * 开启服务器端口
+     */
+    private void startServer() {
+        Intent intent = new Intent(LoginActivity.this, ServerService.class);
+        startService(intent);
     }
 
     private void initView() {
@@ -71,24 +85,39 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         inputAnimator(mInputLayout, mWidth);
     }
 
+
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void Event(LoginEntity entity) {
-        Snackbar snackbar = Snackbar.make(coordiantor, entity.getMessage(), Snackbar.LENGTH_LONG);
+    public void Event(LoginEvent entity) {
+        String show = "";
+        //解析服务器返回数据
+        try {
+            JSONObject jsonObject = new JSONObject(entity.getMessage());
+            if (jsonObject.has("message")) {
+                String result = (String) jsonObject.get("result");
+                String message = (String) jsonObject.get("message");
+                show = message;
+                if (result.equals("true")) {
+                    Intent intent = new Intent(LoginActivity.this, ClientActivity.class);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    progress.setVisibility(View.GONE);
+                    mInputLayout.setVisibility(View.VISIBLE);
+                    //TODO 还原view
+                    mName.setVisibility(View.VISIBLE);
+                    mPsw.setVisibility(View.VISIBLE);
+                    mBtnLogin.setClickable(true);
+                }
+            } else {
+                show = entity.getMessage();
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        Snackbar snackbar = Snackbar.make(coordiantor, show, Snackbar.LENGTH_LONG);
         snackbar.setActionTextColor(Color.WHITE);
         snackbar.show();
-        if (entity.isResult()) {
-            Intent intent = new Intent(LoginActivity.this, ClientActivity.class);
-            startActivity(intent);
-            finish();
-        } else {
-            progress.setVisibility(View.GONE);
-            mInputLayout.setVisibility(View.VISIBLE);
-            //TODO 还原view
-            mName.setVisibility(View.VISIBLE);
-            mPsw.setVisibility(View.VISIBLE);
-            mBtnLogin.setClickable(true);
-        }
     }
 
     private void inputAnimator(final View view, float w) {

@@ -3,23 +3,23 @@ package com.app.jssl.sockettest.eventbus;
 /**
  * Author: ls
  * Time:   2019/4/1 15:48
- * Desc:   This is LoginEntity：
+ * Desc:   This is LoginEvent：
  */
-public class LoginEntity {
-    private boolean result;
+public class LoginEvent {
+    private String time;
     private String message;
 
-    public LoginEntity(boolean result, String message) {
-        this.result = result;
+    public LoginEvent(String time, String message) {
+        this.time = time;
         this.message = message;
     }
 
-    public boolean isResult() {
-        return result;
+    public String getTime() {
+        return time;
     }
 
-    public void setResult(boolean result) {
-        this.result = result;
+    public void setTime(String time) {
+        this.time = time;
     }
 
     public String getMessage() {

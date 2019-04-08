@@ -3,6 +3,7 @@ package com.app.jssl.sockettest.utils;
 import android.content.Context;
 
 import com.app.jssl.sockettest.eventbus.ClientEvent;
+import com.app.jssl.sockettest.eventbus.LoginEvent;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -21,7 +22,7 @@ import java.util.Date;
  */
 public class SocketUtils {
 
-    public static volatile Socket socket = null;
+    public static Socket socket = null;
     public static Context activity;
     public static OutputStream outputStream;
     public static InputStream inputStream;
@@ -42,16 +43,15 @@ public class SocketUtils {
                     try {
                         socket = new Socket("127.0.0.1", 9001);
                         socket.setKeepAlive(true);
-                        socket.setTcpNoDelay(true);
                         outputStream = socket.getOutputStream();
                         inputStream = socket.getInputStream();
-                        EventBus.getDefault().postSticky(new ClientEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()),
-                                "socket连接成功！" + socket.toString()));
+                        EventBus.getDefault().post(new LoginEvent(Time.now(), "socket连接成功！" + socket.toString()));
                     } catch (UnknownHostException e) {
                         e.printStackTrace();
                     } catch (IOException e) {
-                        EventBus.getDefault().postSticky(new ClientEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()),
-                                "无法连接到服务器，请检查ip和端口号//服务器已关闭"));
+                        EventBus.getDefault().post(new ClientEvent(Time.now(), "无法连接到服务器，请检查ip和端口号//服务器已关闭"));
+                    } catch (NullPointerException e) {
+                        EventBus.getDefault().post(new ClientEvent(Time.now(), "无法连接到服务器，请检查ip和端口号//服务器已关闭"));
                     }
                 }
             }
