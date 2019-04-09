@@ -1,5 +1,6 @@
 package com.app.jssl.sockettest.server;
 
+import com.app.jssl.sockettest.eventbus.LoginEvent;
 import com.app.jssl.sockettest.eventbus.ServerEvent;
 import com.app.jssl.sockettest.utils.Time;
 
@@ -16,9 +17,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
@@ -67,28 +66,31 @@ public class MySocketServer {
             socketAddress = new InetSocketAddress(InetAddress.getLocalHost(), 9001);
             socket = new ServerSocket();
             socket.bind(socketAddress);
-            EventBus.getDefault().post(new ServerEvent(Time.now(), "端口开启：" + socket.getLocalPort()));
+            EventBus.getDefault().post(new LoginEvent(Time.now(), true, "端口开启：" + socket.getLocalPort(), "启动服务"));
             //堵塞
             acceptData();
         } catch (IOException e) {
             if (socket.isClosed()) {
-                EventBus.getDefault().post(new ServerEvent(Time.now(), "服务端关闭"));
+                EventBus.getDefault().post(new LoginEvent(Time.now(), false, "服务端关闭", "启动服务"));
             }
             if (socket.isBound()) {
-                EventBus.getDefault().post(new ServerEvent(Time.now(), "服务端口已经开启"));
+                EventBus.getDefault().post(new LoginEvent(Time.now(), false, "服务端口已经开启", "启动服务"));
             }
         }
     }
 
+    /**
+     * 等待客户端连接，并接收数据
+     */
     private void acceptData() {
         threadPools.execute(() -> {
             while (isEnable) {
                 try {
                     clientSocket = socket.accept();
+                    clientSocket.setTcpNoDelay(false);
                     onAcceptRemote(clientSocket);
                 } catch (IOException e) {
-                    EventBus.getDefault().post(new ServerEvent(Time.now()
-                            , "服务器断开，不再接收数据"));
+                    EventBus.getDefault().post(new ServerEvent(Time.now(), "服务器断开，不再接收数据"));
                 }
             }
         });
@@ -98,37 +100,46 @@ public class MySocketServer {
         try {
             // 从Socket当中得到InputStream对象
             InputStream inputStream = remote.getInputStream();
-            byte buffer[] = new byte[1024 * 4];
+            byte buffer[] = new byte[1024];
             int temp = 0;
+            String message = "";
             // 从InputStream当中读取客户端所发送的数据
             while ((temp = inputStream.read(buffer)) != -1) {
-                String message = new String(Arrays.copyOf(buffer, temp)).trim();
-                EventBus.getDefault().post(new ServerEvent(Time.now(),
-                        "收到客户端的消息：" + message));
-                JSONObject jsonObject = new JSONObject(message);
-                JSONObject response = new JSONObject();
-                //todo 定协议 接收的数据格式和响应的数据格式
-                if (jsonObject.get("type").equals("login")) {
-                    if (jsonObject.get("name").equals("admin") && jsonObject.get("passowrd").equals("123")) {
-                        response.put("result", "true");
-                        response.put("message", "登录成功");
-                    } else {
-                        response.put("result", "false");
-                        response.put("message", "账号或密码不对");
-                    }
-                }
-                if (jsonObject.get("type").equals("connect")) {
-                    response.put("message", "连接成功");
-                }
-                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(remote.getOutputStream()));
-                writer.write(response.toString());
-                writer.flush();
+                message = new String(Arrays.copyOf(buffer, temp)).trim();
+                EventBus.getDefault().post(new ServerEvent(Time.now(), "收到客户端的消息：" + message));
+                dealAcceptRemote(remote, message);
             }
         } catch (IOException e) {
             e.printStackTrace();
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 处理客户端数据
+     *
+     * @param remote
+     * @param message
+     * @throws JSONException
+     * @throws IOException
+     */
+    private void dealAcceptRemote(Socket remote, String message) throws JSONException, IOException {
+        JSONObject jsonObject = new JSONObject(message);
+        JSONObject response = new JSONObject();
+        //todo 定协议 接收的数据格式和响应的数据格式
+        if (jsonObject.get("type").equals("login")) {
+            if (jsonObject.get("name").equals("admin") && jsonObject.get("password").equals("123")) {
+                response.put("result", "true");
+                response.put("message", "登录成功");
+            } else {
+                response.put("result", "false");
+                response.put("message", "账号或密码不对");
+            }
+        }
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(remote.getOutputStream()));
+        writer.write(response.toString());
+        writer.flush();
     }
 
     public void reply() {
@@ -157,15 +168,13 @@ public class MySocketServer {
                 clientSocket.close();
                 clientSocket = null;
             } else {
-                EventBus.getDefault().post(new ServerEvent(Time.now(),
-                        "连接已关闭，不再接收数据"));
+                EventBus.getDefault().post(new ServerEvent(Time.now(), "连接已关闭，不再接收数据"));
             }
             socket.close();
             socket = null;
         } catch (IOException e) {
             e.printStackTrace();
         }
-        EventBus.getDefault().post(new ServerEvent(Time.now(),
-                "服务端关闭"));
+        EventBus.getDefault().post(new ServerEvent(Time.now(), "服务端关闭"));
     }
 }

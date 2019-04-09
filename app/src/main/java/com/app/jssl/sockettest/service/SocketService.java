@@ -20,6 +20,7 @@ import org.json.JSONObject;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.net.SocketException;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -63,32 +64,33 @@ public class SocketService extends Service {
     }
 
     private void initService() {
-        startServer();
-        sendHeartBeat();
-        receive();
+        connectServer();
+//        sendHeartBeat();
     }
 
     /**
      * 启动接收线程
      */
     private void receive() {
-        threadPools.execute(() -> {
-            while (true) {
-                try {
-//                    SocketUtils.getSocket().sendUrgentData(0);
-                    byte[] buffer = new byte[1024 * 2];
-                    int length = 0;
-                    while (((length = SocketUtils.inputStream.read(buffer)) != -1)) {
-                        if (length > 0) {
-                            String message = new String(Arrays.copyOf(buffer, length)).trim();
-                            EventBus.getDefault().post(new LoginEvent(Time.now(), message));
-                        }
+        while (true) {
+            try {
+                SocketUtils.getSocket().sendUrgentData(0);
+                byte[] buffer = new byte[1024 * 2];
+                int length = 0;
+                while (((length = SocketUtils.inputStream.read(buffer)) != -1)) {
+                    if (length > 0) {
+                        String message = new String(Arrays.copyOf(buffer, length)).trim();
+                        EventBus.getDefault().post(new LoginEvent(Time.now(), true, message, "登录"));
                     }
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
+            } catch (NullPointerException e) {
+                EventBus.getDefault().post(new ClientEvent(Time.now(), "正在连接服务器..."));
+            } catch (SocketException e) {
+                EventBus.getDefault().post(new LoginEvent(Time.now(), false, "服务断开", "启动服务"));
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        });
+        }
     }
 
     private void sendHeartBeat() {
@@ -107,18 +109,16 @@ public class SocketService extends Service {
                             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(SocketUtils.outputStream));
                             writer.write(socketData);
                             writer.flush();
+                            writer.close();
                         } catch (IOException e) {
                             //todo 重连
-                            EventBus.getDefault().post(new ClientEvent(Time.now()
-                                    , "当前连接已断开...正在重连..."));
+                            EventBus.getDefault().post(new ClientEvent(Time.now(), "当前连接已断开...正在重连..."));
                             SocketUtils.release();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         } catch (NullPointerException e) {
-                            EventBus.getDefault().post(new ClientEvent(Time.now()
-                                    , "服务器关闭，请开启"));
-                            SocketUtils.release();
-                            mHandler.removeCallbacks(runnable);
+                            EventBus.getDefault().post(new ClientEvent(Time.now(), "服务器正在初始化..."));
+//                            SocketUtils.release();
                         }
                         mHandler.postDelayed(this, 1000);
                     }
@@ -129,8 +129,13 @@ public class SocketService extends Service {
         });
     }
 
-    private void startServer() {
-        threadPools.execute(() -> SocketUtils.getSocket());
+    private void connectServer() {
+        threadPools.execute(() -> {
+            SocketUtils.getSocket();
+            if (SocketUtils.getSocket() != null) {
+                receive();
+            }
+        });
     }
 
     @Override
