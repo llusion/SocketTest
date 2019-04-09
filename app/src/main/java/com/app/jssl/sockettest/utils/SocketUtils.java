@@ -2,7 +2,7 @@ package com.app.jssl.sockettest.utils;
 
 import android.content.Context;
 
-import com.app.jssl.sockettest.eventbus.ClientEvent;
+import com.app.jssl.sockettest.eventbus.LoginEvent;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -11,8 +11,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * Author: ls
@@ -21,7 +19,7 @@ import java.util.Date;
  */
 public class SocketUtils {
 
-    public static volatile Socket socket = null;
+    public static Socket socket = null;
     public static Context activity;
     public static OutputStream outputStream;
     public static InputStream inputStream;
@@ -42,16 +40,16 @@ public class SocketUtils {
                     try {
                         socket = new Socket("127.0.0.1", 9001);
                         socket.setKeepAlive(true);
-                        socket.setTcpNoDelay(true);
+                        socket.setTcpNoDelay(false);
                         outputStream = socket.getOutputStream();
                         inputStream = socket.getInputStream();
-                        EventBus.getDefault().postSticky(new ClientEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()),
-                                "socket连接成功！" + socket.toString()));
+                        EventBus.getDefault().post(new LoginEvent(Time.now(), true, "socket连接成功", "连接"));
                     } catch (UnknownHostException e) {
-                        e.printStackTrace();
+                        EventBus.getDefault().post(new LoginEvent(Time.now(), false, "socket连接失败", "连接"));
                     } catch (IOException e) {
-                        EventBus.getDefault().postSticky(new ClientEvent(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()),
-                                "无法连接到服务器，请检查ip和端口号//服务器已关闭"));
+                        EventBus.getDefault().post(new LoginEvent(Time.now(), false, "socket连接失败", "连接"));
+                    } catch (NullPointerException e) {
+                        EventBus.getDefault().post(new LoginEvent(Time.now(), false, "socket连接失败", "连接"));
                     }
                 }
             }

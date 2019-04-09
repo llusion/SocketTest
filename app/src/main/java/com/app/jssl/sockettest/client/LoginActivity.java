@@ -23,17 +23,25 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.app.jssl.sockettest.R;
-import com.app.jssl.sockettest.eventbus.LoginEntity;
+import com.app.jssl.sockettest.eventbus.LoginEvent;
+import com.app.jssl.sockettest.service.ServerService;
 import com.app.jssl.sockettest.service.SocketService;
+import com.app.jssl.sockettest.utils.SocketUtils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+import org.json.JSONObject;
+
+import java.io.BufferedWriter;
+import java.io.OutputStreamWriter;
 
 /**
  * Author: ls
  * Time:   2019/4/1 10:10
  * Desc:   This is LoginActivity：
+ * <p>
+ * 登录页面
  */
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
     private TextView mBtnLogin;
@@ -49,7 +57,24 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         EventBus.getDefault().register(this);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_login);
+        startServer();
         initView();
+    }
+
+    /**
+     * 开启服务器端口
+     */
+    private void startServer() {
+        Intent intent = new Intent(LoginActivity.this, ServerService.class);
+        startService(intent);
+    }
+
+    /**
+     * 开启服务连接socket
+     */
+    private void startService() {
+        Intent intent = new Intent(LoginActivity.this, SocketService.class);
+        startService(intent);
     }
 
     private void initView() {
@@ -73,22 +98,63 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void Event(LoginEntity entity) {
-        Snackbar snackbar = Snackbar.make(coordiantor, entity.getMessage(), Snackbar.LENGTH_LONG);
+    public void Event(LoginEvent entity) {
+        //解析服务器返回数据
+        String show = entity.getMessage();
+        switch (entity.getType()) {
+            case "启动服务":
+                if (entity.isResult()) {
+                    show = "服务器开启成功";
+                    //开启本地服务连接socket
+                    startService();
+                } else {
+                    //重连服务器
+//                    startServer();
+                }
+                break;
+            case "连接":
+                if (entity.isResult()) {
+//                    login();
+                } else {
+                    startService();
+                }
+                break;
+            case "登录":
+                if (entity.isResult()) {
+                    progress.setVisibility(View.GONE);
+                    mBtnLogin.setClickable(true);
+                    toClientActivity();
+                } else {
+                    login();
+                }
+                break;
+        }
+        Snackbar snackbar = Snackbar.make(coordiantor, show, Snackbar.LENGTH_LONG);
         snackbar.setActionTextColor(Color.WHITE);
         snackbar.show();
-        if (entity.isResult()) {
-            Intent intent = new Intent(LoginActivity.this, ClientActivity.class);
-            startActivity(intent);
-            finish();
-        } else {
-            progress.setVisibility(View.GONE);
-            mInputLayout.setVisibility(View.VISIBLE);
-            //TODO 还原view
-            mName.setVisibility(View.VISIBLE);
-            mPsw.setVisibility(View.VISIBLE);
-            mBtnLogin.setClickable(true);
-        }
+    }
+
+    private void toClientActivity() {
+        Intent intent = new Intent(LoginActivity.this, ClientActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    private void login() {
+        new Thread(() -> {
+            try {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("type", "login");
+                jsonObject.put("name", "admin");
+                jsonObject.put("password", "123");
+                String socketData = jsonObject.toString();
+                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(SocketUtils.outputStream));
+                writer.write(socketData);
+                writer.flush();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }).start();
     }
 
     private void inputAnimator(final View view, float w) {
@@ -155,9 +221,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
             @Override
             public void onAnimationEnd(Animator animation) {
-                //启动服务连接socket
-                Intent intent = new Intent(LoginActivity.this, SocketService.class);
-                startService(intent);
+                login();
             }
 
             @Override
