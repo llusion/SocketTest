@@ -3,6 +3,7 @@ package com.app.jssl.sockettest.utils;
 import android.content.Context;
 
 import com.app.jssl.sockettest.eventbus.LoginEvent;
+import com.app.jssl.sockettest.eventbus.SocketEvent;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -44,12 +45,16 @@ public class SocketUtils {
                         outputStream = socket.getOutputStream();
                         inputStream = socket.getInputStream();
                         EventBus.getDefault().post(new LoginEvent(Time.now(), true, "socket连接成功", "连接"));
+                        EventBus.getDefault().post(new SocketEvent(Time.now(), "socket连接成功"));
                     } catch (UnknownHostException e) {
                         EventBus.getDefault().post(new LoginEvent(Time.now(), false, "socket连接失败", "连接"));
+                        EventBus.getDefault().post(new SocketEvent(Time.now(), "socket连接失败"));
                     } catch (IOException e) {
                         EventBus.getDefault().post(new LoginEvent(Time.now(), false, "socket连接失败", "连接"));
+                        EventBus.getDefault().post(new SocketEvent(Time.now(), "socket连接失败"));
                     } catch (NullPointerException e) {
                         EventBus.getDefault().post(new LoginEvent(Time.now(), false, "socket连接失败", "连接"));
+                        EventBus.getDefault().post(new SocketEvent(Time.now(), "socket连接失败"));
                     }
                 }
             }

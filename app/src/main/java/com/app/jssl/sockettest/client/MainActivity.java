@@ -1,5 +1,6 @@
 package com.app.jssl.sockettest.client;
 
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
@@ -8,6 +9,8 @@ import android.widget.TextView;
 import com.app.jssl.sockettest.R;
 import com.app.jssl.sockettest.base.BaseActivity;
 import com.app.jssl.sockettest.eventbus.SocketEvent;
+import com.app.jssl.sockettest.service.HeartBeatService;
+import com.app.jssl.sockettest.utils.Time;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -29,12 +32,20 @@ public class MainActivity extends BaseActivity {
         setContentView(R.layout.activity_main);
         info = findViewById(R.id.info);
         EventBus.getDefault().register(this);
+        EventBus.getDefault().postSticky(new SocketEvent(Time.now(), "登录成功"));
+        startService(new Intent(this, HeartBeatService.class));
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
     public void Event(SocketEvent entity) {
         socketLog.append(entity.getTime() + "\n" + entity.getMessage() + "\n");
         info.setText(socketLog);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
     }
 }

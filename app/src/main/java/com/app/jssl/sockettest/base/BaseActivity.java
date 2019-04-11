@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class BaseActivity extends AppCompatActivity implements NetWorkChangReceiver.NetChangeListener {
     private NetWorkChangReceiver netWorkChangReceiver;
-    private ThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("socket").daemon(true).build();
+    private ThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("base").daemon(true).build();
     public ExecutorService threadPools = new ThreadPoolExecutor(5, 20, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(),
             threadFactory, new ThreadPoolExecutor.AbortPolicy());
 

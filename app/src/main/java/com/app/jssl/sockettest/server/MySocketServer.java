@@ -2,6 +2,7 @@ package com.app.jssl.sockettest.server;
 
 import com.app.jssl.sockettest.eventbus.LoginEvent;
 import com.app.jssl.sockettest.eventbus.ServerEvent;
+import com.app.jssl.sockettest.eventbus.SocketEvent;
 import com.app.jssl.sockettest.utils.Time;
 
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
@@ -67,14 +68,17 @@ public class MySocketServer {
             socket = new ServerSocket();
             socket.bind(socketAddress);
             EventBus.getDefault().post(new LoginEvent(Time.now(), true, "端口开启：" + socket.getLocalPort(), "启动服务"));
+            EventBus.getDefault().postSticky(new SocketEvent(Time.now(), "端口开启：" + socket.getLocalPort()));
             //堵塞
             acceptData();
         } catch (IOException e) {
             if (socket.isClosed()) {
                 EventBus.getDefault().post(new LoginEvent(Time.now(), false, "服务端关闭", "启动服务"));
+                EventBus.getDefault().postSticky(new SocketEvent(Time.now(), "服务端关闭"));
             }
             if (socket.isBound()) {
                 EventBus.getDefault().post(new LoginEvent(Time.now(), false, "服务端口已经开启", "启动服务"));
+                EventBus.getDefault().postSticky(new SocketEvent(Time.now(), "服务端口已经开启"));
             }
         }
     }
@@ -106,7 +110,7 @@ public class MySocketServer {
             // 从InputStream当中读取客户端所发送的数据
             while ((temp = inputStream.read(buffer)) != -1) {
                 message = new String(Arrays.copyOf(buffer, temp)).trim();
-                EventBus.getDefault().post(new ServerEvent(Time.now(), "收到客户端的消息：" + message));
+                EventBus.getDefault().postSticky(new SocketEvent(Time.now(), "收到客户端的消息：" + message));
                 dealAcceptRemote(remote, message);
             }
         } catch (IOException e) {
@@ -130,14 +134,17 @@ public class MySocketServer {
         //todo 定协议 接收的数据格式和响应的数据格式
         if (jsonObject.get("type").equals("login")) {
             if (jsonObject.get("name").equals("admin") && jsonObject.get("password").equals("123")) {
+                response.put("type", "login");
                 response.put("result", "true");
                 response.put("message", "登录成功");
             } else {
+                response.put("type", "login");
                 response.put("result", "false");
                 response.put("message", "账号或密码不对");
             }
         }
         if (jsonObject.get("type").equals("beat")) {
+            response.put("type", "beat");
             response.put("result", "true");
         }
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(remote.getOutputStream()));
@@ -168,6 +175,8 @@ public class MySocketServer {
         try {
             isEnable = false;
             if (clientSocket != null) {
+                clientSocket.getOutputStream().close();
+                clientSocket.getInputStream().close();
                 clientSocket.close();
                 clientSocket = null;
             } else {

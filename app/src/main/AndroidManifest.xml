@@ -13,11 +13,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".client.ClientActivity"></activity>
-
-        <activity android:name=".server.ServerActivity">
-
-        </activity>
 
         <activity android:name=".client.LoginActivity">
             <intent-filter>
@@ -26,7 +21,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".client.MainActivity" />
-
         <service android:name=".service.SocketService" />
         <service android:name=".service.ServerService" />
         <service android:name=".service.HeartBeatService" />
