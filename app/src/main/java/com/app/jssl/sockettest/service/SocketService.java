@@ -2,9 +2,7 @@ package com.app.jssl.sockettest.service;
 
 import android.app.Service;
 import android.content.Intent;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
 import android.support.annotation.Nullable;
 
 import com.app.jssl.sockettest.eventbus.ClientEvent;
@@ -14,12 +12,8 @@ import com.app.jssl.sockettest.utils.Time;
 
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.greenrobot.eventbus.EventBus;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.net.SocketException;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
@@ -43,8 +37,6 @@ public class SocketService extends Service {
     private ThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("client").daemon(true).build();
     public ExecutorService threadPools = new ThreadPoolExecutor(5, 20, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(),
             threadFactory, new ThreadPoolExecutor.AbortPolicy());
-    private Handler mHandler;
-    private Runnable runnable;
 
     @Nullable
     @Override
@@ -65,7 +57,6 @@ public class SocketService extends Service {
 
     private void initService() {
         connectServer();
-//        sendHeartBeat();
     }
 
     /**
@@ -93,42 +84,6 @@ public class SocketService extends Service {
         }
     }
 
-    private void sendHeartBeat() {
-        threadPools.execute(new Runnable() {
-            @Override
-            public void run() {
-                Looper.prepare();
-                mHandler = new Handler();
-                runnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            JSONObject jsonObject = new JSONObject();
-                            jsonObject.put("type", "connect");
-                            String socketData = jsonObject.toString();
-                            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(SocketUtils.outputStream));
-                            writer.write(socketData);
-                            writer.flush();
-                            writer.close();
-                        } catch (IOException e) {
-                            //todo 重连
-                            EventBus.getDefault().post(new ClientEvent(Time.now(), "当前连接已断开...正在重连..."));
-                            SocketUtils.release();
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        } catch (NullPointerException e) {
-                            EventBus.getDefault().post(new ClientEvent(Time.now(), "服务器正在初始化..."));
-//                            SocketUtils.release();
-                        }
-                        mHandler.postDelayed(this, 1000);
-                    }
-                };
-                mHandler.post(runnable);
-                Looper.loop();
-            }
-        });
-    }
-
     private void connectServer() {
         threadPools.execute(() -> {
             SocketUtils.getSocket();
@@ -141,7 +96,6 @@ public class SocketService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mHandler.removeCallbacks(runnable);
         SocketUtils.release();
     }
 }

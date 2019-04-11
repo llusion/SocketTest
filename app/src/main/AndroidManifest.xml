@@ -25,9 +25,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".client.MainActivity" />
 
         <service android:name=".service.SocketService" />
         <service android:name=".service.ServerService" />
+        <service android:name=".service.HeartBeatService" />
 
     </application>
 

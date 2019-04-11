@@ -137,6 +137,9 @@ public class MySocketServer {
                 response.put("message", "账号或密码不对");
             }
         }
+        if (jsonObject.get("type").equals("beat")) {
+            response.put("result", "true");
+        }
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(remote.getOutputStream()));
         writer.write(response.toString());
         writer.flush();

@@ -123,7 +123,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 if (entity.isResult()) {
                     progress.setVisibility(View.GONE);
                     mBtnLogin.setClickable(true);
-                    toClientActivity();
+                    toMainActivity();
                 } else {
                     login();
                 }
@@ -134,8 +134,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         snackbar.show();
     }
 
-    private void toClientActivity() {
-        Intent intent = new Intent(LoginActivity.this, ClientActivity.class);
+    private void toMainActivity() {
+        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
         startActivity(intent);
         finish();
     }
