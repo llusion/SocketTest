@@ -13,7 +13,6 @@ import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -23,6 +22,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.app.jssl.sockettest.R;
+import com.app.jssl.sockettest.base.BaseActivity;
 import com.app.jssl.sockettest.eventbus.LoginEvent;
 import com.app.jssl.sockettest.service.ServerService;
 import com.app.jssl.sockettest.service.SocketService;
@@ -43,7 +43,7 @@ import java.io.OutputStreamWriter;
  * <p>
  * 登录页面
  */
-public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
+public class LoginActivity extends BaseActivity implements View.OnClickListener {
     private TextView mBtnLogin;
     private View progress, mInputLayout;
     private CoordinatorLayout coordiantor;
@@ -104,27 +104,25 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         switch (entity.getType()) {
             case "启动服务":
                 if (entity.isResult()) {
-                    show = "服务器开启成功";
                     //开启本地服务连接socket
                     startService();
-                } else {
-                    //重连服务器
-//                    startServer();
                 }
                 break;
             case "连接":
-                if (entity.isResult()) {
-//                    login();
-                } else {
+                if (!entity.isResult()) {
+                    mBtnLogin.setClickable(false);
+                    SocketUtils.release();
                     startService();
+                } else {
+                    mBtnLogin.setClickable(true);
                 }
                 break;
             case "登录":
                 if (entity.isResult()) {
                     progress.setVisibility(View.GONE);
-                    mBtnLogin.setClickable(true);
                     toMainActivity();
                 } else {
+                    show = "登录失败正在重试";
                     login();
                 }
                 break;
@@ -141,7 +139,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     }
 
     private void login() {
-        new Thread(() -> {
+        threadPools.execute(() -> {
             try {
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("type", "login");
@@ -154,7 +152,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        }).start();
+        });
     }
 
     private void inputAnimator(final View view, float w) {

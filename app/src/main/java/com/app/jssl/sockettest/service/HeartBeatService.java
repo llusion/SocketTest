@@ -7,7 +7,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.support.annotation.Nullable;
 
-import com.app.jssl.sockettest.eventbus.ClientEvent;
+import com.app.jssl.sockettest.eventbus.SocketEvent;
 import com.app.jssl.sockettest.utils.SocketUtils;
 import com.app.jssl.sockettest.utils.Time;
 
@@ -46,6 +46,7 @@ public class HeartBeatService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        sendHeartBeat();
     }
 
     @Override
@@ -69,17 +70,15 @@ public class HeartBeatService extends Service {
                             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(SocketUtils.outputStream));
                             writer.write(socketData);
                             writer.flush();
-                            writer.close();
                         } catch (IOException e) {
-                            //todo 重连
-                            EventBus.getDefault().post(new ClientEvent(Time.now(), "当前连接已断开...正在重连..."));
-                            SocketUtils.release();
+                            EventBus.getDefault().post(new SocketEvent(Time.now(), "当前连接已断开...正在重连..."));
+                            SocketUtils.handleException();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         } catch (NullPointerException e) {
-                            EventBus.getDefault().post(new ClientEvent(Time.now(), "服务器正在初始化..."));
+                            EventBus.getDefault().post(new SocketEvent(Time.now(), "服务器异常"));
                         }
-                        mHandler.postDelayed(this, 1000);
+                        mHandler.postDelayed(this, 10 * 1000);
                     }
                 };
                 mHandler.post(runnable);
@@ -91,5 +90,8 @@ public class HeartBeatService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        if (mHandler != null) {
+            mHandler.removeCallbacks(runnable);
+        }
     }
 }

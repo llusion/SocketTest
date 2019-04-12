@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
@@ -24,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class BaseActivity extends AppCompatActivity implements NetWorkChangReceiver.NetChangeListener {
     private NetWorkChangReceiver netWorkChangReceiver;
-    private ThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("socket").daemon(true).build();
+    private ThreadFactory threadFactory = new BasicThreadFactory.Builder().namingPattern("base").daemon(true).build();
     public ExecutorService threadPools = new ThreadPoolExecutor(5, 20, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(),
             threadFactory, new ThreadPoolExecutor.AbortPolicy());
 
@@ -50,9 +51,5 @@ public class BaseActivity extends AppCompatActivity implements NetWorkChangRecei
             Toast.makeText(this, "断网了", Toast.LENGTH_SHORT).show();
             SocketUtils.release();
         }
-    }
-
-    public void handleException(Class clazz) {
-        stopService(new Intent(this, clazz));
     }
 }
