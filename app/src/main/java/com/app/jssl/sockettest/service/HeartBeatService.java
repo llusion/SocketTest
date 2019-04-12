@@ -71,9 +71,8 @@ public class HeartBeatService extends Service {
                             writer.write(socketData);
                             writer.flush();
                         } catch (IOException e) {
-                            //todo 重连
                             EventBus.getDefault().post(new SocketEvent(Time.now(), "当前连接已断开...正在重连..."));
-//                            SocketUtils.release();
+                            SocketUtils.handleException();
                         } catch (JSONException e) {
                             e.printStackTrace();
                         } catch (NullPointerException e) {

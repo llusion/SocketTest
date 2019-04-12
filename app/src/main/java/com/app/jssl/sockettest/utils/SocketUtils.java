@@ -1,6 +1,7 @@
 package com.app.jssl.sockettest.utils;
 
 import android.content.Context;
+import android.os.Handler;
 
 import com.app.jssl.sockettest.eventbus.LoginEvent;
 import com.app.jssl.sockettest.eventbus.SocketEvent;
@@ -24,6 +25,8 @@ public class SocketUtils {
     public static Context activity;
     public static OutputStream outputStream;
     public static InputStream inputStream;
+    public static Handler handler;
+    public static Runnable runnable;
 
     private SocketUtils(Context activity) {
         SocketUtils.activity = activity;
@@ -81,6 +84,26 @@ public class SocketUtils {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public static void handleException() {
+        SocketUtils.release();
+        handler = new Handler();
+        runnable = new Runnable() {
+            @Override
+            public void run() {
+                if (SocketUtils.socket == null) {
+                    SocketUtils.getSocket();
+                } else {
+                    handler.removeCallbacks(this::run);
+                }
+                handler.postDelayed(runnable, 120 * 1000);
+            }
+        };
+        handler.post(runnable);
+        if (SocketUtils.socket != null) {
+            handler.removeCallbacks(runnable);
         }
     }
 }
