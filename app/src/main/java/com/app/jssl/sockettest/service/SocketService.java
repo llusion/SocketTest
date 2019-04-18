@@ -6,6 +6,7 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 
 import com.app.jssl.sockettest.eventbus.LoginEvent;
+import com.app.jssl.sockettest.eventbus.MainEvent;
 import com.app.jssl.sockettest.eventbus.SocketEvent;
 import com.app.jssl.sockettest.utils.SocketUtils;
 import com.app.jssl.sockettest.utils.Time;
@@ -53,12 +54,17 @@ public class SocketService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        initService();
+        connectServer();
         return super.onStartCommand(intent, flags, startId);
     }
 
-    private void initService() {
-        connectServer();
+    private void connectServer() {
+        threadPools.execute(() -> {
+            SocketUtils.getSocket();
+            if (SocketUtils.getSocket() != null) {
+                receive();
+            }
+        });
     }
 
     /**
@@ -67,7 +73,6 @@ public class SocketService extends Service {
     private void receive() {
         while (true) {
             try {
-                SocketUtils.getSocket().sendUrgentData(0);
                 byte[] buffer = new byte[1024];
                 int length = 0;
                 while (((length = SocketUtils.inputStream.read(buffer)) != -1)) {
@@ -93,20 +98,11 @@ public class SocketService extends Service {
                 EventBus.getDefault().post(new LoginEvent(Time.now(), message.contains("true"), message, "登录"));
             }
             if ("beat".equals(jsonObject.get("type"))) {
-                EventBus.getDefault().post(new SocketEvent(Time.now(), "服务器回应心跳：" + message));
+                EventBus.getDefault().post(new MainEvent(Time.now(), "服务器回应心跳：" + message));
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
-    }
-
-    private void connectServer() {
-        threadPools.execute(() -> {
-            SocketUtils.getSocket();
-            if (SocketUtils.getSocket() != null) {
-                receive();
-            }
-        });
     }
 
     @Override

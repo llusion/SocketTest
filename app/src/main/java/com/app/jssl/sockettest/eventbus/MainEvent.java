@@ -2,18 +2,15 @@ package com.app.jssl.sockettest.eventbus;
 
 /**
  * Author: ls
- * Time:   2019/4/11 9:23
- * Desc:   This is SocketEvent：
+ * Time:   2019/4/18 16:12
+ * Desc:   This is MainEvent：
  */
-public class SocketEvent {
-
+public class MainEvent {
     private String time;
-    private String type;
     private String message;
 
-    public SocketEvent(String time, String type, String message) {
+    public MainEvent(String time, String message) {
         this.time = time;
-        this.type = type;
         this.message = message;
     }
 
@@ -23,14 +20,6 @@ public class SocketEvent {
 
     public void setTime(String time) {
         this.time = time;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
     }
 
     public String getMessage() {

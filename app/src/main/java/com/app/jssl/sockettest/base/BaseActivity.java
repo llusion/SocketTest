@@ -6,9 +6,15 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
+import com.app.jssl.sockettest.eventbus.SocketEvent;
+import com.app.jssl.sockettest.service.ReconnectUtils;
+import com.app.jssl.sockettest.utils.Constant;
 import com.app.jssl.sockettest.utils.SocketUtils;
+import com.app.jssl.sockettest.utils.Time;
 
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -43,11 +49,41 @@ public class BaseActivity extends AppCompatActivity implements NetWorkChangRecei
         unregisterReceiver(netWorkChangReceiver);
     }
 
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    public void Event(SocketEvent entity) {
+        switch (entity.getType()) {
+            case "reconnect":
+                Constant.valid = false;
+                handleException(entity.getMessage());
+                break;
+            case "remoteException":
+                break;
+            case "localException":
+                break;
+        }
+    }
+
+    public void handleException(String type) {
+        switch (type) {
+            case "netError":
+                Toast.makeText(this, "无法连接到服务器", Toast.LENGTH_SHORT).show();
+                break;
+            case "connect":
+                SocketUtils.release();
+                SocketUtils.getSocket();
+                break;
+            case "reconnect":
+                ReconnectUtils.getInstance(this, getSupportFragmentManager()).reconnect();
+                break;
+        }
+    }
+
     @Override
     public void onNetChange(boolean netStatus) {
-        if (!netStatus) {
-            Toast.makeText(this, "断网了", Toast.LENGTH_SHORT).show();
-            SocketUtils.handleException();
-        }
+//        if (!netStatus) {
+//            Toast.makeText(this, "断网了", Toast.LENGTH_SHORT).show();
+//        } else {
+//            ReconnectUtils.getInstance(this, getSupportFragmentManager()).reconnect();
+//        }
     }
 }

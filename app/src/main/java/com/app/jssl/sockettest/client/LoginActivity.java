@@ -6,13 +6,11 @@ import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.Snackbar;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -20,12 +18,15 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.app.jssl.sockettest.R;
 import com.app.jssl.sockettest.base.BaseActivity;
 import com.app.jssl.sockettest.eventbus.LoginEvent;
-import com.app.jssl.sockettest.service.ServerService;
+import com.app.jssl.sockettest.service.HeartBeatService;
+import com.app.jssl.sockettest.service.ReconnectUtils;
 import com.app.jssl.sockettest.service.SocketService;
+import com.app.jssl.sockettest.utils.NetConnectUtils;
 import com.app.jssl.sockettest.utils.SocketUtils;
 
 import org.greenrobot.eventbus.EventBus;
@@ -46,7 +47,6 @@ import java.io.OutputStreamWriter;
 public class LoginActivity extends BaseActivity implements View.OnClickListener {
     private TextView mBtnLogin;
     private View progress, mInputLayout;
-    private CoordinatorLayout coordiantor;
     private float mWidth;
     private LinearLayout mName, mPsw;
     private AnimatorSet set;
@@ -57,16 +57,8 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
         EventBus.getDefault().register(this);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_login);
-        startServer();
+        startService();
         initView();
-    }
-
-    /**
-     * 开启服务器端口
-     */
-    private void startServer() {
-        Intent intent = new Intent(LoginActivity.this, ServerService.class);
-        startService(intent);
     }
 
     /**
@@ -75,13 +67,14 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
     private void startService() {
         Intent intent = new Intent(LoginActivity.this, SocketService.class);
         startService(intent);
+        Intent mIntent = new Intent(LoginActivity.this, HeartBeatService.class);
+        startService(mIntent);
     }
 
     private void initView() {
         mBtnLogin = findViewById(R.id.main_btn_login);
         progress = findViewById(R.id.layout_progress);
         mInputLayout = findViewById(R.id.input_layout);
-        coordiantor = findViewById(R.id.coordiantor);
         mName = findViewById(R.id.input_layout_name);
         mPsw = findViewById(R.id.input_layout_psw);
         mBtnLogin.setOnClickListener(this);
@@ -100,19 +93,23 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void Event(LoginEvent entity) {
         //解析服务器返回数据
-        String show = entity.getMessage();
         switch (entity.getType()) {
-            case "启动服务":
-                if (entity.isResult()) {
-                    //开启本地服务连接socket
-                    startService();
-                }
-                break;
             case "连接":
                 if (!entity.isResult()) {
                     mBtnLogin.setClickable(false);
-                    SocketUtils.release();
-                    startService();
+                    //2.服务器地址不对
+                    if (NetConnectUtils.hasNet(this)) {
+                        //3.需要重连
+                        if ("socket连接失败".equals(entity.getMessage())) {
+                            ReconnectUtils.getInstance(this, getSupportFragmentManager()).reconnect();
+                        } else {
+                            Toast.makeText(this, entity.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        //1.无网络
+                        Toast.makeText(this, "当前无网络", Toast.LENGTH_SHORT).show();
+                    }
+
                 } else {
                     mBtnLogin.setClickable(true);
                 }
@@ -122,14 +119,10 @@ public class LoginActivity extends BaseActivity implements View.OnClickListener 
                     progress.setVisibility(View.GONE);
                     toMainActivity();
                 } else {
-                    show = "登录失败正在重试";
                     login();
                 }
                 break;
         }
-        Snackbar snackbar = Snackbar.make(coordiantor, show, Snackbar.LENGTH_LONG);
-        snackbar.setActionTextColor(Color.WHITE);
-        snackbar.show();
     }
 
     private void toMainActivity() {

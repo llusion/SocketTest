@@ -7,7 +7,9 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.support.annotation.Nullable;
 
+import com.app.jssl.sockettest.base.BaseActivity;
 import com.app.jssl.sockettest.eventbus.SocketEvent;
+import com.app.jssl.sockettest.utils.Constant;
 import com.app.jssl.sockettest.utils.SocketUtils;
 import com.app.jssl.sockettest.utils.Time;
 
@@ -63,6 +65,9 @@ public class HeartBeatService extends Service {
                 runnable = new Runnable() {
                     @Override
                     public void run() {
+                        if (!Constant.valid) {
+                            return;
+                        }
                         try {
                             JSONObject jsonObject = new JSONObject();
                             jsonObject.put("type", "beat");
@@ -71,12 +76,11 @@ public class HeartBeatService extends Service {
                             writer.write(socketData);
                             writer.flush();
                         } catch (IOException e) {
-                            EventBus.getDefault().post(new SocketEvent(Time.now(), "当前连接已断开...正在重连..."));
-                            SocketUtils.handleException();
+                            EventBus.getDefault().post(new SocketEvent(Time.now(), "reconnect", "reconnect"));
                         } catch (JSONException e) {
                             e.printStackTrace();
                         } catch (NullPointerException e) {
-                            EventBus.getDefault().post(new SocketEvent(Time.now(), "服务器异常"));
+                            EventBus.getDefault().post(new SocketEvent(Time.now(), "服务器异常", "remoteException"));
                         }
                         mHandler.postDelayed(this, 10 * 1000);
                     }

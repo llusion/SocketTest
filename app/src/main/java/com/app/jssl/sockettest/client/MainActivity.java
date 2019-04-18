@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import com.app.jssl.sockettest.R;
 import com.app.jssl.sockettest.base.BaseActivity;
+import com.app.jssl.sockettest.eventbus.MainEvent;
 import com.app.jssl.sockettest.eventbus.SocketEvent;
 import com.app.jssl.sockettest.service.HeartBeatService;
 import com.app.jssl.sockettest.utils.Time;
@@ -32,13 +33,13 @@ public class MainActivity extends BaseActivity {
         setContentView(R.layout.activity_main);
         info = findViewById(R.id.info);
         EventBus.getDefault().register(this);
-        EventBus.getDefault().postSticky(new SocketEvent(Time.now(), "登录成功"));
+        EventBus.getDefault().postSticky(new MainEvent(Time.now(), "登录成功"));
         startService(new Intent(this, HeartBeatService.class));
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
-    public void Event(SocketEvent entity) {
+    public void Event(MainEvent entity) {
         socketLog.append(entity.getTime() + "\n" + entity.getMessage() + "\n");
         info.setText(socketLog);
     }
