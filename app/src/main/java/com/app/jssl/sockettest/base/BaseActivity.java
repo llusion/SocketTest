@@ -1,10 +1,8 @@
 package com.app.jssl.sockettest.base;
 
-import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
@@ -49,7 +47,7 @@ public class BaseActivity extends AppCompatActivity implements NetWorkChangRecei
     public void onNetChange(boolean netStatus) {
         if (!netStatus) {
             Toast.makeText(this, "断网了", Toast.LENGTH_SHORT).show();
-            SocketUtils.release();
+            SocketUtils.handleException();
         }
     }
 }
